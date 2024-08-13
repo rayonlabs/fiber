@@ -7,31 +7,31 @@ from fiber import constants as fcst
 logger = get_logger(__name__)
 
 
-def _get_chain_endpoint(chain_network: str | None, chain_address: str | None) -> str:
-    if chain_network is None and chain_address is None:
-        raise ValueError("chain_network and chain_address cannot both be None")
+def _get_chain_endpoint(subtensor_network: str | None, subtensor_address: str | None) -> str:
+    if subtensor_network is None and subtensor_address is None:
+        raise ValueError("subtensor_network and subtensor_address cannot both be None")
 
-    if chain_address is not None:
-        logger.info(f"Using chain address: {chain_address}")
-        return chain_address
+    if subtensor_address is not None:
+        logger.info(f"Using chain address: {subtensor_address}")
+        return subtensor_address
 
-    if chain_network not in fcst.CHAIN_NETWORK_TO_CHAIN_ADDRESS:
-        raise ValueError(f"Unrecognized chain network: {chain_network}")
+    if subtensor_network not in fcst.SUBTENSOR_NETWORK_TO_SUBTENSOR_ADDRESS:
+        raise ValueError(f"Unrecognized chain network: {subtensor_network}")
 
-    chain_address = fcst.CHAIN_NETWORK_TO_CHAIN_ADDRESS[chain_network]
-    logger.info(f"Using the chain network: {chain_network} and therefore chain address: {chain_address}")
-    return chain_address
+    subtensor_address = fcst.SUBTENSOR_NETWORK_TO_SUBTENSOR_ADDRESS[subtensor_network]
+    logger.info(f"Using the chain network: {subtensor_network} and therefore chain address: {subtensor_address}")
+    return subtensor_address
 
 
 def get_substrate_interface(
-    chain_network: str | None = fcst.FINNEY_NETWORK, chain_address: str | None = None
+    subtensor_network: str | None = fcst.FINNEY_NETWORK, subtensor_address: str | None = None
 ) -> SubstrateInterface:
-    chain_address = _get_chain_endpoint(chain_network, chain_address)
+    subtensor_address = _get_chain_endpoint(subtensor_network, subtensor_address)
 
     type_registry = type_registries.get_type_registry()
     substrate_interface = SubstrateInterface(
-        ss58_format=42, use_remote_preset=True, url=chain_address, type_registry=type_registry
+        ss58_format=42, use_remote_preset=True, url=subtensor_address, type_registry=type_registry
     )
-    logger.info(f"Connected to {chain_address}")
+    logger.info(f"Connected to {subtensor_address}")
 
     return substrate_interface

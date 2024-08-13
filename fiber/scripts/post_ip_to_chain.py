@@ -29,7 +29,7 @@ def main():
     wallet_name = args_dict.get("wallet.name")
     wallet_hotkey = args_dict.get("wallet.hotkey")
 
-    substrate_interface = interface.get_substrate_interface(chain_address=chain_endpoint, chain_network=network)
+    substrate_interface = interface.get_substrate_interface(subtensor_address=chain_endpoint, subtensor_network=network)
     keypair = chain_utils.load_hotkey_keypair(wallet_name=wallet_name, hotkey_name=wallet_hotkey)
     coldkey_keypair_pub = chain_utils.load_coldkeypub_keypair(wallet_name=wallet_name)
 

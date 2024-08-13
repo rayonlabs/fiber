@@ -39,12 +39,12 @@ def factory_config() -> Config:
     wallet_name = os.getenv("WALLET_NAME", "default")
     hotkey_name = os.getenv("HOTKEY_NAME", "default")
     netuid = os.getenv("NETUID")
-    chain_network = os.getenv("CHAIN_NETWORK")
-    chain_address = os.getenv("CHAIN_ADDRESS")
+    subtensor_network = os.getenv("SUBTENSOR_NETWORK")
+    subtensor_address = os.getenv("SUBTENSOR_ADDRESS")
     load_old_nodes = bool(os.getenv("LOAD_OLD_NODES", True))
     min_stake_threshold = int(os.getenv("MIN_STAKE_THRESHOLD", 1_000))
 
-    substrate_interface = interface.get_substrate_interface(chain_network, chain_address)
+    substrate_interface = interface.get_substrate_interface(subtensor_network, subtensor_address)
     metagraph = Metagraph(substrate_interface=substrate_interface, netuid=netuid, load_old_nodes=load_old_nodes)
 
     if netuid is None:
