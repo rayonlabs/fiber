@@ -6,6 +6,18 @@ from fiber import constants as bcst
 from cryptography.fernet import Fernet
 
 
+def construct_server_address(
+    ip: str,
+    port: int,
+    ip_type: int,
+    protocol: int,
+) -> str:
+    """
+    Currently just supports http4.
+    """
+    return f"http://{ip}:{port}"
+
+
 def get_encrypted_payload(
     server_address: str,
     validator_ss58_address: str,
