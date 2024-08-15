@@ -30,4 +30,3 @@ class PublicKeyResponse(BaseModel):
     public_key: str
     timestamp: float
     hotkey: str
-    signature: str
