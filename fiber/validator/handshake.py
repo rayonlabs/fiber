@@ -16,13 +16,13 @@ async def perform_handshake(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     keypair: Keypair,
-) -> tuple[bytes, str]:
+) -> tuple[bytes, str] | None:
     public_key_encryption_key = await get_public_encryption_key(httpx_client, server_address)
 
     symmetric_key: bytes = os.urandom(32)
     symmetric_key_uuid: str = os.urandom(32).hex()
 
-    await send_symmetric_key_to_server(
+    success = await send_symmetric_key_to_server(
         httpx_client,
         server_address,
         keypair,
@@ -30,10 +30,12 @@ async def perform_handshake(
         symmetric_key,
         symmetric_key_uuid,
     )
+    if success:
+        symmetric_key = base64.b64encode(symmetric_key).decode()
 
-    symmetric_key = base64.b64encode(symmetric_key).decode()
-
-    return symmetric_key, symmetric_key_uuid
+        return symmetric_key, symmetric_key_uuid
+    else:
+        return None
 
 
 async def get_public_encryption_key(
