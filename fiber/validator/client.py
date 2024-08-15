@@ -15,6 +15,10 @@ def construct_server_address(
     """
     Currently just supports http4.
     """
+    if ip == "0.0.0.1":
+        # CHAIN DOES NOT ALLOW 127.0.0.1 TO BE POSTED. IS THIS 
+        # A REASONABLE WORKAROUND FOR LOCAL DEV?
+        return f"http://127.0.0.1:{port}"
     return f"http://{ip}:{port}"
 
 
