@@ -9,14 +9,23 @@ from fiber.miner.security.encryption import get_symmetric_key_b64_from_payload
 
 
 async def get_public_key(config: Config = Depends(get_config)):
+    timestamp = time.time()
+    response_data = {
+        "public_key": config.encryption_keys_handler.public_bytes.decode(),
+        "timestamp": timestamp,
+        "hotkey": config.keypair.ss58_address
+    }
+    
+    message_to_sign = signatures.construct_message_from_payload(response_data)
+    
+    signature = signatures.sign_message(
+        config.keypair,
+        message_to_sign
+    )
+    
     return PublicKeyResponse(
-        public_key=config.encryption_keys_handler.public_bytes.decode(),
-        timestamp=time.time(),
-        hotkey=config.keypair.ss58_address,
-        signature=signatures.sign_message(
-            config.keypair,
-            signatures.construct_public_key_message_to_sign(),
-        ),
+        **response_data,
+        signature=signature
     )
 
 
