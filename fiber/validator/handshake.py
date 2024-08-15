@@ -17,7 +17,9 @@ async def perform_handshake(
     server_address: str,
     keypair: Keypair,
 ) -> tuple[bytes, str]:
-    public_key_encryption_key = await get_public_encryption_key(httpx_client, server_address)
+    public_key_encryption_key = await get_public_encryption_key(
+        httpx_client, server_address
+    )
 
     symmetric_key: bytes = os.urandom(32)
     symmetric_key_uuid: str = os.urandom(32).hex()
@@ -39,11 +41,15 @@ async def perform_handshake(
 async def get_public_encryption_key(
     httpx_client: httpx.AsyncClient, server_address: str, timeout: int = 3
 ) -> X25519PublicKey:
-    response = await httpx_client.get(url=f"{server_address}/{bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}", timeout=timeout)
+    response = await httpx_client.get(
+        url=f"{server_address}/{bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}", timeout=timeout
+    )
     response.raise_for_status()
     data = encryption.PublicKeyResponse(**response.json())
     public_key_pem = data.public_key.encode()
-    public_key_encryption_key = rust_openssl.keys.load_pem_public_key(public_key_pem, backend=default_backend())
+    public_key_encryption_key = rust_openssl.keys.load_pem_public_key(
+        public_key_pem, backend=default_backend()
+    )
     return public_key_encryption_key
 
 
@@ -64,11 +70,19 @@ async def send_symmetric_key_to_server(
         "ss58_address": keypair.ss58_address,
         "timestamp": time.time(),
         "nonce": os.urandom(16).hex(),
-        "signature": signatures.sign_message(keypair, signatures.construct_public_key_message_to_sign()),
     }
 
+    signature = signatures.sign_message(
+        keypair, signatures.construct_message_from_payload(payload)
+    )
+
+    headers = {"hotkey": keypair.ss58_address, "signature": signature}
+
     response = await httpx_client.post(
-        f"{server_address}/{bcst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}", json=payload, timeout=timeout
+        f"{server_address}/{bcst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}",
+        json=payload,
+        timeout=timeout,
+        headers=headers,
     )
     response.raise_for_status()
     return response.status_code == 200

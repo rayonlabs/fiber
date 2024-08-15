@@ -23,7 +23,6 @@ class SymmetricKeyExchange(BaseModel):
     ss58_address: str
     timestamp: float
     nonce: str
-    signature: str
 
 
 class PublicKeyResponse(BaseModel):
