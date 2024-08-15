@@ -1,7 +1,10 @@
 from fiber.miner.core import configuration
 from fiber.miner.core.models.config import Config
 from fastapi import Depends, Request, HTTPException
+from fiber.logging_utils import get_logger
 
+
+logger = get_logger(__name__)
 
 def get_config() -> Config:
     return configuration.factory_config()
@@ -12,6 +15,7 @@ async def blacklist_low_stake(request: Request, config: Config = Depends(get_con
 
     hotkey = request.headers.get("hotkey")
     if not hotkey:
+        logger.debug("Hotkey header missing from request!")
         raise HTTPException(status_code=400, detail="Hotkey header missing")
 
     node = metagraph.nodes.get(hotkey)
