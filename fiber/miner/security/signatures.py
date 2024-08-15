@@ -9,7 +9,9 @@ def sign_message(keypair: Keypair, message: str) -> str:
     return f"0x{keypair.sign(message).hex()}"
 
 
-def verify_signature(message: str, signature: str, ss58_address: str) -> bool:
+def verify_signature(message: str | None, signature: str, ss58_address: str) -> bool:
+    if message is None:
+        return False
     try:
         keypair = Keypair(ss58_address=ss58_address)
         return keypair.verify(data=message, signature=signature)
@@ -32,4 +34,4 @@ def construct_message_from_payload(body: str |  bytes |  dict) -> str:
             return body_str
     except Exception as e:
         logger.error(f"Error constructing message from payload: {str(e)}")
-        raise ValueError("Error processing request body")
+        return None

@@ -23,7 +23,7 @@ async def verify_signature(request: Request, config: Config = Depends(get_config
         raise HTTPException(status_code=400, detail="Signature header missing")
 
     if not signatures.verify_signature(
-        message=signatures.construct_public_key_message_to_sign(),
+        message=signatures.construct_message_from_payload(await request.body()),
         ss58_address=request.headers.get("hotkey"),
         signature=signature,
     ):
