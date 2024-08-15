@@ -21,7 +21,7 @@ from fiber.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def factory_app(debug: bool = False) -> FastAPI:
+def factory_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         config = configuration.factory_config()
@@ -36,7 +36,7 @@ def factory_app(debug: bool = False) -> FastAPI:
         metagraph.shutdown()
         sync_thread.join()
 
-    app = FastAPI(lifespan=lifespan, debug=debug)
+    app = FastAPI(lifespan=lifespan)
 
 
 
