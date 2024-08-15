@@ -11,14 +11,15 @@ def construct_server_address(
     port: int,
     ip_type: int,
     protocol: int,
+    replace_with_docker_localhost: bool = False,
 ) -> str:
     """
     Currently just supports http4.
     """
-    if ip == "0.0.0.1":
+    if ip == "0.0.0.1" and replace_with_docker_localhost:
         # CHAIN DOES NOT ALLOW 127.0.0.1 TO BE POSTED. IS THIS 
         # A REASONABLE WORKAROUND FOR LOCAL DEV?
-        return f"http://127.0.0.1:{port}"
+        return f"http://host.docker.internal:{port}"
     return f"http://{ip}:{port}"
 
 
