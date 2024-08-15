@@ -7,7 +7,7 @@ from fastapi import Header
 from typing import Type, TypeVar
 
 from pydantic import BaseModel
-from fiber.miner.core.dependencies import get_config
+from fiber.miner.dependencies import get_config
 from fiber.miner.core.models.encryption import SymmetricKeyExchange
 from fiber.miner.core.models.config import Config
 from fiber.logging_utils import get_logger

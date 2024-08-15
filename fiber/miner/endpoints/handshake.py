@@ -2,7 +2,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 
 from fiber.miner.core.configuration import Config
-from fiber.miner.core.dependencies import get_config, blacklist_low_stake
+from fiber.miner.dependencies import get_config, blacklist_low_stake
 from fiber.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
 from fiber.miner.security import signatures
 from fiber.miner.security.encryption import get_symmetric_key_b64_from_payload
