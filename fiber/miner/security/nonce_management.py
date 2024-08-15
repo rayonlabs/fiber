@@ -19,7 +19,7 @@ class NonceManager:
         self.add_nonce(nonce)
 
         # Check for recency
-        current_time_ns = time.monotonic_ns()
+        current_time_ns = time.time_ns()
         try:
             timestamp_ns = int(nonce.split("_")[0])
         except (ValueError, IndexError):
