@@ -15,6 +15,8 @@ class Node(BaseModel):
     ip_type: int
     port: int
     protocol: int = 4
+    symmetric_key: str | None = None
+    symmetric_key_uuid: str | None = None
 
 
 class ParamWithTypes(TypedDict):
