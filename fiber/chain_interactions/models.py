@@ -1,6 +1,6 @@
 from typing import TypedDict
 from pydantic import BaseModel
-
+from cryptography.fernet import Fernet
 
 class Node(BaseModel):
     hotkey: str
@@ -15,7 +15,7 @@ class Node(BaseModel):
     ip_type: int
     port: int
     protocol: int = 4
-    symmetric_key: str | None = None
+    fernet: Fernet | None = None
     symmetric_key_uuid: str | None = None
 
 

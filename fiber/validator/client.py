@@ -4,23 +4,20 @@ from typing import Any
 import httpx
 from fiber import constants as bcst
 from cryptography.fernet import Fernet
-
+from fiber.chain_interactions.models import Node
 
 def construct_server_address(
-    ip: str,
-    port: int,
-    ip_type: int,
-    protocol: int,
-    replace_with_docker_localhost: bool = False,
+    node: Node,
+    replace_with_docker_localhost: bool = True,
 ) -> str:
     """
     Currently just supports http4.
     """
-    if ip == "0.0.0.1" and replace_with_docker_localhost:
+    if node.ip == "0.0.0.1" and replace_with_docker_localhost:
         # CHAIN DOES NOT ALLOW 127.0.0.1 TO BE POSTED. IS THIS
         # A REASONABLE WORKAROUND FOR LOCAL DEV?
-        return f"http://host.docker.internal:{port}"
-    return f"http://{ip}:{port}"
+        return f"http://host.docker.internal:{node.port}"
+    return f"http://{node.ip}:{node.port}"
 
 
 def get_encrypted_payload(
@@ -51,7 +48,7 @@ async def make_non_streamed_post(
     endpoint: str,
     payload: dict[str, Any],
     timeout: int = 10,
-):
+) -> httpx.Response:
     encrypted_payload, headers = get_encrypted_payload(
         validator_ss58_address=validator_ss58_address,
         fernet=fernet,
