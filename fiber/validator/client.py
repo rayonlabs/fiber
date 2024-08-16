@@ -37,6 +37,27 @@ def get_encrypted_payload(
 
     return encrypted_payload, headers
 
+async def make_non_streamed_get(
+    httpx_client: httpx.AsyncClient,
+    server_address: str,
+    validator_ss58_address: str,
+    fernet: Fernet,
+    symmetric_key_uuid: str,
+    endpoint: str,
+    timeout: int = 10,
+):
+    _, headers = get_encrypted_payload(
+        validator_ss58_address=validator_ss58_address,
+        fernet=fernet,
+        symmetric_key_uuid=symmetric_key_uuid,
+        payload={},
+    )
+    response = await httpx_client.get(
+        timeout=timeout,
+        headers=headers,
+        url=server_address + endpoint,
+    )
+    return response
 
 async def make_non_streamed_post(
     httpx_client: httpx.AsyncClient,
@@ -54,7 +75,7 @@ async def make_non_streamed_post(
         symmetric_key_uuid=symmetric_key_uuid,
         payload=payload,
     )
-    response = await httpx_client.get(
+    response = await httpx_client.post(
         data=encrypted_payload,
         timeout=timeout,
         headers=headers,
