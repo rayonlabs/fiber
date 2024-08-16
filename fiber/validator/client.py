@@ -24,7 +24,6 @@ def get_encrypted_payload(
     validator_ss58_address: str,
     fernet: Fernet,
     symmetric_key_uuid: str,
-    endpoint: str,
     payload: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, str]]:
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
@@ -53,14 +52,13 @@ async def make_non_streamed_post(
         validator_ss58_address=validator_ss58_address,
         fernet=fernet,
         symmetric_key_uuid=symmetric_key_uuid,
-        endpoint=endpoint,
         payload=payload,
     )
-    response = await httpx_client.post(
+    response = await httpx_client.get(
         data=encrypted_payload,
         timeout=timeout,
         headers=headers,
-        url=server_address,
+        url=server_address + endpoint,
     )
     return response
 
@@ -87,7 +85,7 @@ async def make_streamed_post(
         data=encrypted_payload,
         headers=headers,
         timeout=timeout,
-        url=server_address,
+        url=server_address + endpoint,
     )
     async for chunk in response.aiter_lines():
         yield chunk
