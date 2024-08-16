@@ -60,7 +60,7 @@ async def make_non_streamed_post(
         data=encrypted_payload,
         timeout=timeout,
         headers=headers,
-        server_address=server_address,
+        url=server_address,
     )
     return response
 
@@ -87,7 +87,7 @@ async def make_streamed_post(
         data=encrypted_payload,
         headers=headers,
         timeout=timeout,
-        server_address=server_address,
+        url=server_address,
     )
     async for chunk in response.aiter_lines():
         yield chunk
