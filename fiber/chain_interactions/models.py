@@ -18,6 +18,9 @@ class Node(BaseModel):
     fernet: Fernet | None = None
     symmetric_key_uuid: str | None = None
 
+    model_config = {
+        "arbitrary_types_allowed": True
+    }
 
 class ParamWithTypes(TypedDict):
     name: str
