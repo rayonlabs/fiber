@@ -33,6 +33,7 @@ def factory_app(debug: bool = False) -> FastAPI:
 
         logger.info("Shutting down...")
 
+        config.encryption_keys_handler.close()
         metagraph.shutdown()
         sync_thread.join()
 

@@ -10,6 +10,9 @@ from fiber import utils
 from fiber.miner.core.models.encryption import SymmetricKeyInfo
 from fiber.miner.security.nonce_management import NonceManager
 from fiber.miner.core import miner_constants as mcst
+from fiber.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class EncryptionKeysHandler:
@@ -21,16 +24,22 @@ class EncryptionKeysHandler:
         self.load_symmetric_keys()
 
         self._running: bool = True
-        self._cleanup_thread: threading.Thread = threading.Thread(target=self._periodic_cleanup, daemon=True)
+        self._cleanup_thread: threading.Thread = threading.Thread(
+            target=self._periodic_cleanup, daemon=True
+        )
         self._cleanup_thread.start()
 
-    def add_symmetric_key(self, uuid: str, hotkey_ss58_address: str, fernet: Fernet) -> None:
+    def add_symmetric_key(
+        self, uuid: str, hotkey_ss58_address: str, fernet: Fernet
+    ) -> None:
         symmetric_key_info = SymmetricKeyInfo.create(fernet)
         if hotkey_ss58_address not in self.symmetric_keys_fernets:
             self.symmetric_keys_fernets[hotkey_ss58_address] = {}
         self.symmetric_keys_fernets[hotkey_ss58_address][uuid] = symmetric_key_info
 
-    def get_symmetric_key(self, hotkey_ss58_address: str, uuid: str) -> SymmetricKeyInfo | None:
+    def get_symmetric_key(
+        self, hotkey_ss58_address: str, uuid: str
+    ) -> SymmetricKeyInfo | None:
         return self.symmetric_keys_fernets.get(hotkey_ss58_address, {}).get(uuid)
 
     def save_symmetric_keys(self) -> None:
@@ -47,6 +56,9 @@ class EncryptionKeysHandler:
         json_data = json.dumps(serializable_keys)
         encrypted_data = self.asymmetric_fernet.encrypt(json_data.encode())
 
+        logger.info(
+            f"Saving {len(serializable_keys)} symmetric keys to {mcst.SYMMETRIC_KEYS_FILENAME}"
+        )
         with open(mcst.SYMMETRIC_KEYS_FILENAME, "wb") as file:
             file.write(encrypted_data)
 
@@ -60,11 +72,15 @@ class EncryptionKeysHandler:
 
             self.symmetric_keys_fernets = {
                 hotkey: {
-                    uuid: SymmetricKeyInfo(Fernet(key_data["key"]), datetime.fromisoformat(key_data["expiration_time"]))
+                    uuid: SymmetricKeyInfo(
+                        Fernet(key_data["key"]),
+                        datetime.fromisoformat(key_data["expiration_time"]),
+                    )
                     for uuid, key_data in keys.items()
                 }
                 for hotkey, keys in loaded_keys.items()
             }
+            logger.info(f"Loaded {len(self.symmetric_keys_fernets)} symmetric keys")
 
     def _clean_expired_keys(self) -> None:
         for hotkey in list(self.symmetric_keys_fernets.keys()):
@@ -84,7 +100,9 @@ class EncryptionKeysHandler:
 
     def load_asymmetric_keys(self) -> None:
         # TODO: Allow this to be passed in via env too
-        self.private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        self.private_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=2048
+        )
         self.public_key = self.private_key.public_key()
         self.public_bytes = self.public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
