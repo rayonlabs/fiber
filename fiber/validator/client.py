@@ -9,14 +9,18 @@ from fiber.chain_interactions.models import Node
 def construct_server_address(
     node: Node,
     replace_with_docker_localhost: bool = True,
+    replace_with_localhost: bool = False,
 ) -> str:
     """
     Currently just supports http4.
     """
-    if node.ip == "0.0.0.1" and replace_with_docker_localhost:
+    if node.ip == "0.0.0.1":
         # CHAIN DOES NOT ALLOW 127.0.0.1 TO BE POSTED. IS THIS
         # A REASONABLE WORKAROUND FOR LOCAL DEV?
-        return f"http://host.docker.internal:{node.port}"
+        if replace_with_docker_localhost:
+            return f"http://host.docker.internal:{node.port}"
+        elif replace_with_localhost:
+            return f"http://localhost:{node.port}"
     return f"http://{node.ip}:{node.port}"
 
 
