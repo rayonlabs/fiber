@@ -32,7 +32,7 @@ def get_symmetric_key_b64_from_payload(payload: SymmetricKeyExchange, private_ke
         )
     except ValueError:
         raise HTTPException(status_code=401, detail="Oi, I can't decrypt that symmetric key, sorry")
-    base64_symmetric_key = base64.b64encode(decrypted_symmetric_key).decode()
+    base64_symmetric_key = base64.urlsafe_b64encode(decrypted_symmetric_key).decode()
     return base64_symmetric_key
 
 
@@ -51,17 +51,19 @@ async def decrypt_symmetric_key_exchange_payload(
 def decrypt_general_payload(
     model: Type[T],
     encrypted_payload: bytes = Depends(get_body),
-    key_uuid: str = Header(...),
-    hotkey: str = Header(...),
+    symmetric_key_uuid: str = Header(...),
+    hotkey_ss58_address: str = Header(...),
     config: Config = Depends(get_config),
 ) -> T:
 
-    symmetric_key_info = config.encryption_keys_handler.get_symmetric_key(hotkey, key_uuid)
+    symmetric_key_info = config.encryption_keys_handler.get_symmetric_key(hotkey_ss58_address, symmetric_key_uuid)
     if not symmetric_key_info:
         raise HTTPException(status_code=400, detail="No symmetric key found for that hotkey and uuid")
 
+    logger.debug(f"Symmetric key info: {symmetric_key_info}")
 
     logger.debug(f"Encrypted payload type: {type(encrypted_payload)}")
+    logger.info(f"encrypted payload: {encrypted_payload}")
     decrypted_data = symmetric_key_info.fernet.decrypt(encrypted_payload)
 
     data_dict = json.loads(decrypted_data.decode())

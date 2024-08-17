@@ -24,14 +24,14 @@ class EncryptionKeysHandler:
         self._cleanup_thread: threading.Thread = threading.Thread(target=self._periodic_cleanup, daemon=True)
         self._cleanup_thread.start()
 
-    def add_symmetric_key(self, uuid: str, hotkey: str, fernet: Fernet) -> None:
+    def add_symmetric_key(self, uuid: str, hotkey_ss58_address: str, fernet: Fernet) -> None:
         symmetric_key_info = SymmetricKeyInfo.create(fernet)
-        if hotkey not in self.symmetric_keys_fernets:
-            self.symmetric_keys_fernets[hotkey] = {}
-        self.symmetric_keys_fernets[hotkey][uuid] = symmetric_key_info
+        if hotkey_ss58_address not in self.symmetric_keys_fernets:
+            self.symmetric_keys_fernets[hotkey_ss58_address] = {}
+        self.symmetric_keys_fernets[hotkey_ss58_address][uuid] = symmetric_key_info
 
-    def get_symmetric_key(self, hotkey: str, uuid: str) -> SymmetricKeyInfo | None:
-        return self.symmetric_keys_fernets.get(hotkey, {}).get(uuid)
+    def get_symmetric_key(self, hotkey_ss58_address: str, uuid: str) -> SymmetricKeyInfo | None:
+        return self.symmetric_keys_fernets.get(hotkey_ss58_address, {}).get(uuid)
 
     def save_symmetric_keys(self) -> None:
         serializable_keys = {
