@@ -37,7 +37,7 @@ def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
         incentive=neuron_info_copy["incentive"],
         trust=_normalise_u16_float(neuron_info_copy["trust"]),
         vtrust=_normalise_u16_float(neuron_info_copy["validator_trust"]),
-        updated=neuron_info_copy["updated"],
+        blocks_since_weights_set=neuron_info_copy["updated"],
         ip=str(netaddr.IPAddress(int(neuron_info_copy["axon_info"]["ip"]))),
         ip_type=neuron_info_copy["axon_info"]["ip_type"],
         port=neuron_info_copy["axon_info"]["port"],
