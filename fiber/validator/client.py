@@ -7,6 +7,8 @@ from cryptography.fernet import Fernet
 from fiber.chain_interactions.models import Node
 from fiber.logging_utils import get_logger
 
+import aiohttp
+from typing import AsyncGenerator
 
 logger = get_logger(__name__)
 
@@ -78,9 +80,9 @@ async def make_non_streamed_post(
     )
     return response
 
- 
+
 async def make_streamed_post(
-    httpx_client: httpx.AsyncClient,
+    session: aiohttp.ClientSession,
     server_address: str,
     validator_ss58_address: str,
     fernet: Fernet,
@@ -88,16 +90,24 @@ async def make_streamed_post(
     endpoint: str,
     payload: dict[str, Any],
     timeout: int = 10,
-):
+) -> AsyncGenerator[str, None]:
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
-    async with httpx_client.stream(
-        method="POST",
-        data=encrypted_payload,
-        headers=headers,
-        timeout=timeout,
-        url=server_address + endpoint,
-    ) as response:
-        async for line in response.aiter_lines():
-            yield line
+
+    try:
+        async with session.post(
+            url=server_address + endpoint,
+            data=encrypted_payload,
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(total=timeout),
+        ) as response:
+            response.raise_for_status()
+            async for line in response.content.iter_any():
+                yield line.decode("utf-8")
+    except aiohttp.ClientResponseError as e:
+        logger.error(f"Client Response Error details: {e}")
+        raise
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise
