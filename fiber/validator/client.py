@@ -90,6 +90,17 @@ async def make_streamed_post(
     payload: dict[str, Any],
     timeout: int = 10,
 ) -> AsyncGenerator[str, None]:
+    logger.info(f"""
+                args:
+                httpx_client: {httpx_client}
+                server_address: {server_address}
+                validator_ss58_address: {validator_ss58_address}
+                fernet: {fernet}
+                symmetric_key_uuid: {symmetric_key_uuid}
+                endpoint: {endpoint}
+                payload: {payload}
+                timeout: {timeout}
+                """)
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
