@@ -101,28 +101,31 @@ async def make_streamed_post(
                 payload: {payload}
                 timeout: {timeout}
                 """)
+    
+
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
 
-    try:
-        async with httpx_client.stream(
-            method="POST",
-            url=server_address + endpoint,
-            content=encrypted_payload,
-            headers=headers,
-            timeout=timeout,
-        ) as response:
+
+    async with httpx_client.stream(
+        method="POST",
+        url=server_address + endpoint,
+        data=encrypted_payload,
+        headers=headers,
+        timeout=timeout,
+    ) as response:
+        try:
             response.raise_for_status()
-            async for line in response.aiter_lines():
+                
+            
+            async for line in response.aiter_raw():
                 yield line
-    except httpx.HTTPStatusError as e:
-        logger.error(f"HTTP Status Error: {e.response.status_code}")
-        logger.error(f"Response Body: {e.response.text}")
-        raise
-    except httpx.ConnectError as e:
-        logger.error(f"Connection Error: {e.request.content}")
-        raise
-    except Exception as e:
-        logger.error(f"Client Response Error details: {e}")
-        raise
+        except httpx.HTTPStatusError as e:
+            await response.aread()
+            logger.error(f"HTTP Error {e.response.status_code}: {e.response.text}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            logger.exception("Full traceback:")
+            raise
