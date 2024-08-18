@@ -11,7 +11,7 @@ class Node(BaseModel):
     stake: float
     trust: float
     vtrust: float
-    updated: float
+    blocks_since_weights_set: float
     ip: str
     ip_type: int
     port: int
