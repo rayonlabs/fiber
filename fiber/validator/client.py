@@ -24,7 +24,7 @@ def _get_headers(
 
 def construct_server_address(
     node: Node,
-    replace_with_docker_localhost: bool = True,
+    replace_with_docker_localhost: bool = False,
     replace_with_localhost: bool = False,
 ) -> str:
     """
@@ -49,6 +49,7 @@ async def make_non_streamed_get(
     timeout: int = 10,
 ):
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+    logger.debug(f"headers: {headers}")
     response = await httpx_client.get(
         timeout=timeout,
         headers=headers,
