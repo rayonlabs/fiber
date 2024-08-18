@@ -98,7 +98,7 @@ async def make_streamed_post(
         async with httpx_client.stream(
             method="POST",
             url=server_address + endpoint,
-            data=encrypted_payload,
+            content=encrypted_payload,
             headers=headers,
             timeout=timeout,
         ) as response:
