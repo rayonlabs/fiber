@@ -78,7 +78,7 @@ async def make_non_streamed_post(
     )
     return response
 
-
+ 
 async def make_streamed_post(
     httpx_client: httpx.AsyncClient,
     server_address: str,
@@ -92,11 +92,12 @@ async def make_streamed_post(
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
-    response = httpx_client.stream(
+    async with httpx_client.stream(
+        method="POST",
         data=encrypted_payload,
         headers=headers,
         timeout=timeout,
         url=server_address + endpoint,
-    )
-    async for chunk in response.aiter_lines():
-        yield chunk
+    ) as response:
+        async for line in response.aiter_lines():
+            yield line

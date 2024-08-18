@@ -27,7 +27,6 @@ def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
         ss58_encode(coldkey, fcst.SS58_FORMAT): _rao_to_tao(stake)
         for coldkey, stake in neuron_info_copy["stake"]
     }
-    print(neuron_info_copy)
     return models.Node(
         hotkey=ss58_encode(neuron_info_copy["hotkey"], fcst.SS58_FORMAT),
         coldkey=ss58_encode(neuron_info_copy["coldkey"], fcst.SS58_FORMAT),
