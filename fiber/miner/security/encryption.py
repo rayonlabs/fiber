@@ -60,10 +60,7 @@ def decrypt_general_payload(
     if not symmetric_key_info:
         raise HTTPException(status_code=400, detail="No symmetric key found for that hotkey and uuid")
 
-    logger.debug(f"Symmetric key info: {symmetric_key_info}")
 
-    logger.debug(f"Encrypted payload type: {type(encrypted_payload)}")
-    logger.info(f"encrypted payload: {encrypted_payload}")
     decrypted_data = symmetric_key_info.fernet.decrypt(encrypted_payload)
 
     data_dict = json.loads(decrypted_data.decode())
