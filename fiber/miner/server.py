@@ -26,8 +26,11 @@ def factory_app(debug: bool = False) -> FastAPI:
     async def lifespan(app: FastAPI):
         config = configuration.factory_config()
         metagraph = config.metagraph
-        sync_thread = threading.Thread(target=metagraph.periodically_sync_nodes, daemon=True)
-        sync_thread.start()
+        if metagraph.substrate_interface is not None:
+            sync_thread = threading.Thread(
+                target=metagraph.periodically_sync_nodes, daemon=True
+            )
+            sync_thread.start()
 
         yield
 
@@ -35,11 +38,10 @@ def factory_app(debug: bool = False) -> FastAPI:
 
         config.encryption_keys_handler.close()
         metagraph.shutdown()
-        sync_thread.join()
+        if metagraph.substrate_interface is not None:
+            sync_thread.join()
 
     app = FastAPI(lifespan=lifespan, debug=debug)
-
-
 
     handshake_router = handshake_factory_router()
     app.include_router(handshake_router)

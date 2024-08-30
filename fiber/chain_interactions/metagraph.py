@@ -22,7 +22,7 @@ class Metagraph:
     The metagraph refers to the nodes (miners & validators) for a particular sub-network
     """
 
-    def __init__(self, substrate_interface: SubstrateInterface, netuid: int, load_old_nodes: bool = True) -> None:
+    def __init__(self, substrate_interface: SubstrateInterface | None, netuid: int, load_old_nodes: bool = True) -> None:
         self.substrate_interface = substrate_interface
         self.nodes: dict[str, models.Node] = {}
         self.netuid = netuid

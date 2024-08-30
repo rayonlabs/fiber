@@ -1,5 +1,7 @@
 from functools import lru_cache
 
+import httpx
+
 from fiber.chain_interactions.metagraph import Metagraph
 from fiber.miner.security import nonce_management
 from dotenv import load_dotenv
@@ -43,9 +45,20 @@ def factory_config() -> Config:
     subtensor_address = os.getenv("SUBTENSOR_ADDRESS")
     load_old_nodes = bool(os.getenv("LOAD_OLD_NODES", True))
     min_stake_threshold = int(os.getenv("MIN_STAKE_THRESHOLD", 1_000))
-
-    substrate_interface = interface.get_substrate_interface(subtensor_network, subtensor_address)
-    metagraph = Metagraph(substrate_interface=substrate_interface, netuid=netuid, load_old_nodes=load_old_nodes)
+    refresh_nodes = os.getenv("REFRESH_NODES", "true").lower() == "true"
+    if refresh_nodes:
+        substrate_interface = interface.get_substrate_interface(
+            subtensor_network, subtensor_address
+        )
+        metagraph = Metagraph(
+            substrate_interface=substrate_interface,
+            netuid=netuid,
+            load_old_nodes=load_old_nodes,
+        )
+    else:
+        metagraph = Metagraph(
+            substrate_interface=None, netuid=netuid, load_old_nodes=load_old_nodes
+        )
 
     if netuid is None:
         raise ValueError("Must set NETUID env var please x)")
@@ -56,11 +69,14 @@ def factory_config() -> Config:
     if storage_encryption_key is None:
         storage_encryption_key = _derive_key_from_string(mcst.DEFAULT_ENCRYPTION_STRING)
 
-    encryption_keys_handler = key_management.EncryptionKeysHandler(nonce_manager, storage_encryption_key)
+    encryption_keys_handler = key_management.EncryptionKeysHandler(
+        nonce_manager, storage_encryption_key
+    )
 
     return Config(
         encryption_keys_handler=encryption_keys_handler,
         keypair=keypair,
         metagraph=metagraph,
         min_stake_threshold=min_stake_threshold,
+        httpx_client=httpx.AsyncClient(),
     )

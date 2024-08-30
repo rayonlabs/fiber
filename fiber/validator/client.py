@@ -111,6 +111,6 @@ async def make_streamed_post(
             logger.error(f"HTTP Error {e.response.status_code}: {e.response.text}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}")
-            logger.exception("Full traceback:")
+            # logger.error(f"Unexpected error: {str(e)}")
+            # logger.exception("Full traceback:")
             raise

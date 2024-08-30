@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from fiber.chain_interactions.metagraph import Metagraph
 from fiber.miner.security import key_management
 from substrateinterface import Keypair
+import httpx
 
 @dataclass
 class Config:
@@ -9,3 +10,4 @@ class Config:
     keypair: Keypair
     metagraph: Metagraph
     min_stake_threshold: float
+    httpx_client: httpx.AsyncClient

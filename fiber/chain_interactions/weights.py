@@ -14,9 +14,16 @@ from typing import Callable, Any
 logger = get_logger(__name__)
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4), reraise=True)
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=4),
+    reraise=True,
+)
 def _query_subtensor(
-    substrate: SubstrateInterface, name: str, block: int | None = None, params: int | None = None
+    substrate: SubstrateInterface,
+    name: str,
+    block: int | None = None,
+    params: int | None = None,
 ) -> ScaleType:
     return substrate.query(
         module="SubtensorModule",
@@ -27,25 +34,42 @@ def _query_subtensor(
 
 
 def _get_hyperparameter(
-    substrate_interface: SubstrateInterface, param_name: str, netuid: int, block: int | None = None
+    substrate_interface: SubstrateInterface,
+    param_name: str,
+    netuid: int,
+    block: int | None = None,
 ) -> list[int] | None:
-    subnet_exists = getattr(_query_subtensor(substrate_interface, "NetworksAdded", block, [netuid]), "value", False)
+    subnet_exists = getattr(
+        _query_subtensor(substrate_interface, "NetworksAdded", block, [netuid]),
+        "value",
+        False,
+    )
     if not subnet_exists:
         return None
-    return getattr(_query_subtensor(substrate_interface, param_name, block, [netuid]), "value", None)
+    return getattr(
+        _query_subtensor(substrate_interface, param_name, block, [netuid]),
+        "value",
+        None,
+    )
 
 
-def _blocks_since_last_update(substrate_interface: SubstrateInterface, netuid: int, node_id: int) -> int | None:
+def _blocks_since_last_update(
+    substrate_interface: SubstrateInterface, netuid: int, node_id: int
+) -> int | None:
     current_block = substrate_interface.get_block_number(None)
     last_updated = _get_hyperparameter(substrate_interface, "LastUpdate", netuid)
     return None if last_updated is None else current_block - int(last_updated[node_id])
 
 
-def _min_interval_to_set_weights(substrate_interface: SubstrateInterface, netuid: int) -> int:
+def _min_interval_to_set_weights(
+    substrate_interface: SubstrateInterface, netuid: int
+) -> int:
     return _get_hyperparameter(substrate_interface, "WeightsSetRateLimit", netuid)
 
 
-def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[float]) -> tuple[list[int], list[int]]:
+def _normalize_and_quantize_weights(
+    node_ids: list[int], node_weights: list[float]
+) -> tuple[list[int], list[int]]:
     if (
         len(node_ids) != len(node_weights)
         or any(uid < 0 for uid in node_ids)
@@ -67,7 +91,11 @@ def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[floa
 
 
 def _format_error_message(error_message: dict) -> str:
-    err_type, err_name, err_description = "UnknownType", "UnknownError", "Unknown Description"
+    err_type, err_name, err_description = (
+        "UnknownType",
+        "UnknownError",
+        "Unknown Description",
+    )
     if isinstance(error_message, dict):
         err_type = error_message.get("type", err_type)
         err_name = error_message.get("name", err_name)
@@ -87,7 +115,11 @@ def log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1.5, min=2, max=5), reraise=True)
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1.5, min=2, max=5),
+    reraise=True,
+)
 @log_and_reraise
 def _send_extrinsic(
     substrate_interface: SubstrateInterface,
@@ -96,7 +128,9 @@ def _send_extrinsic(
     wait_for_finalization: bool = False,
 ) -> tuple[bool, str | None]:
     response = substrate_interface.submit_extrinsic(
-        extrinsic_to_send, wait_for_inclusion=wait_for_inclusion, wait_for_finalization=wait_for_finalization
+        extrinsic_to_send,
+        wait_for_inclusion=wait_for_inclusion,
+        wait_for_finalization=wait_for_finalization,
     )
     if not wait_for_finalization and not wait_for_inclusion:
         return True, "Not waiting for finalization or inclusion."
@@ -108,8 +142,12 @@ def _send_extrinsic(
     return False, _format_error_message(response.error_message)
 
 
-def can_set_weights(substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
-    blocks_since_update = _blocks_since_last_update(substrate_interface, netuid, validator_node_id)
+def can_set_weights(
+    substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int
+) -> bool:
+    blocks_since_update = _blocks_since_last_update(
+        substrate_interface, netuid, validator_node_id
+    )
     min_interval = _min_interval_to_set_weights(substrate_interface, netuid)
     return blocks_since_update is not None and blocks_since_update > min_interval
 
@@ -125,8 +163,10 @@ def set_node_weights(
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
     max_attempts: int = 1,
-) -> tuple[bool, str]:
-    node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
+) -> bool:
+    node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(
+        node_ids, node_weights
+    )
     rpc_call = substrate_interface.compose_call(
         call_module="SubtensorModule",
         call_function="set_weights",
@@ -138,23 +178,29 @@ def set_node_weights(
         },
     )
 
-    extrinsic_to_send = substrate_interface.create_signed_extrinsic(call=rpc_call, keypair=keypair, era={"period": 5})
+    extrinsic_to_send = substrate_interface.create_signed_extrinsic(
+        call=rpc_call, keypair=keypair, era={"period": 5}
+    )
 
     weights_can_be_set = False
     for attempt in range(1, max_attempts + 1):
         if not can_set_weights(substrate_interface, netuid, validator_node_id):
             logger.info(
-                logger.info(f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs...")
+                logger.info(
+                    f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs..."
+                )
             )
             time.sleep(30)
             continue
         else:
             weights_can_be_set = True
+            break
 
     if not weights_can_be_set:
-        return False, "No attempt made. Perhaps it is too soon to set weights!"
+        logger.error("No attempt to set weightsmade. Perhaps it is too soon to set weights!")
+        return False
 
-    logger.info(f"Attempting to set weights (Attempt {attempt}/{max_attempts})...")
+    logger.info("Attempting to set weights...")
 
     success, error_message = _send_extrinsic(
         substrate_interface=substrate_interface,
@@ -164,17 +210,17 @@ def set_node_weights(
     )
 
     if not wait_for_finalization and not wait_for_inclusion:
-        return success, "Not waiting for finalization or inclusion."
+        logger.info("Not waiting for finalization or inclusion to set weights. Returning immediately.")
+        return success
 
     if success:
         if wait_for_finalization:
-            logger.info(f"Set weights - Finalized: {success}")
-            message = "Successfully set weights and Finalized."
+            logger.info("✅ Successfully set weights and finalized")
+        elif wait_for_inclusion:
+            logger.info("✅ Successfully set weights and included")
         else:
-            logger.info(f"Set weights - Included: {success}")
-            message = "Successfully set weights and Included."
+            logger.info("✅ Successfully set weights")
     else:
-        logger.error(f"Failed to set weights: {error_message}")
-        message = error_message
+        logger.error(f"❌ Failed to set weights: {error_message}")
 
-    return success, message
+    return success
