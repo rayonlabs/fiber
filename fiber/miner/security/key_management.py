@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 
 class EncryptionKeysHandler:
     def __init__(self, nonce_manager: NonceManager, storage_encryption_key: str, hotkey: str):
+        self.hotkey = hotkey
         self.nonce_manager = nonce_manager
         self.asymmetric_fernet = Fernet(storage_encryption_key)
         self.symmetric_keys_fernets: dict[str, dict[str, SymmetricKeyInfo]] = {}
@@ -29,7 +30,6 @@ class EncryptionKeysHandler:
         )
         self._cleanup_thread.start()
 
-        self.hotkey = hotkey
 
     def add_symmetric_key(
         self, uuid: str, hotkey_ss58_address: str, fernet: Fernet
