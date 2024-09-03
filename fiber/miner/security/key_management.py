@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 class EncryptionKeysHandler:
-    def __init__(self, nonce_manager: NonceManager, storage_encryption_key: str):
+    def __init__(self, nonce_manager: NonceManager, storage_encryption_key: str, hotkey: str):
         self.nonce_manager = nonce_manager
         self.asymmetric_fernet = Fernet(storage_encryption_key)
         self.symmetric_keys_fernets: dict[str, dict[str, SymmetricKeyInfo]] = {}
@@ -28,6 +28,8 @@ class EncryptionKeysHandler:
             target=self._periodic_cleanup, daemon=True
         )
         self._cleanup_thread.start()
+
+        self.hotkey = hotkey
 
     def add_symmetric_key(
         self, uuid: str, hotkey_ss58_address: str, fernet: Fernet
@@ -43,6 +45,8 @@ class EncryptionKeysHandler:
         return self.symmetric_keys_fernets.get(hotkey_ss58_address, {}).get(uuid)
 
     def save_symmetric_keys(self) -> None:
+
+        filename = f"{self.hotkey}_{mcst.SYMMETRIC_KEYS_FILENAME}"
         serializable_keys = {
             hotkey: {
                 uuid: {
@@ -57,14 +61,16 @@ class EncryptionKeysHandler:
         encrypted_data = self.asymmetric_fernet.encrypt(json_data.encode())
 
         logger.info(
-            f"Saving {len(serializable_keys)} symmetric keys to {mcst.SYMMETRIC_KEYS_FILENAME}"
+            f"Saving {len(serializable_keys)} symmetric keys to {filename}"
         )
-        with open(mcst.SYMMETRIC_KEYS_FILENAME, "wb") as file:
+        with open(filename, "wb") as file:
             file.write(encrypted_data)
 
     def load_symmetric_keys(self) -> None:
-        if os.path.exists(mcst.SYMMETRIC_KEYS_FILENAME):
-            with open(mcst.SYMMETRIC_KEYS_FILENAME, "rb") as f:
+
+        filename = f"{self.hotkey}_{mcst.SYMMETRIC_KEYS_FILENAME}"
+        if os.path.exists(filename):
+            with open(filename, "rb") as f:
                 encrypted_data = f.read()
 
             decrypted_data = self.asymmetric_fernet.decrypt(encrypted_data)

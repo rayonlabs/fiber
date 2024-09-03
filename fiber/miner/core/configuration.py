@@ -70,7 +70,7 @@ def factory_config() -> Config:
         storage_encryption_key = _derive_key_from_string(mcst.DEFAULT_ENCRYPTION_STRING)
 
     encryption_keys_handler = key_management.EncryptionKeysHandler(
-        nonce_manager, storage_encryption_key
+        nonce_manager, storage_encryption_key, hotkey=hotkey_name
     )
 
     return Config(
