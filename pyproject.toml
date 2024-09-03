@@ -30,6 +30,12 @@ fiber-post-ip = "fiber.scripts.post_ip_to_chain:main"
 [tool.hatch.build.targets.wheel]
 packages = ["fiber"]
 
+[tool.hatch.build]
+include = [
+    "fiber/**/*.py",
+]
+
+
 [tool.hatch.build.targets.sdist]
 include = [
     "/fiber",
