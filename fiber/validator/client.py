@@ -14,8 +14,7 @@ logger = get_logger(__name__)
 
 def _get_headers(symmetric_key_uuid: str, validator_ss58_address: str) -> dict[str, str]:
     return {
-        # TODO: Evauluate content type
-        "Content-Type": "application/octet-stream",
+        "Content-Type": "application/octet-stream",  # NOTE: Good?
         bcst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
         bcst.SS58_ADDRESS: validator_ss58_address,
     }

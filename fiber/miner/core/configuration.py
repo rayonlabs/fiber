@@ -19,7 +19,6 @@ from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 
-# TODO: Have this path passed in?
 load_dotenv()
 
 
