@@ -41,7 +41,6 @@ def main():
 
     assert isinstance(wallet_name, str)
     assert isinstance(wallet_hotkey, str)
-    assert isinstance(chain_endpoint, str)
     assert isinstance(network, str)
 
 
