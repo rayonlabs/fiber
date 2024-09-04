@@ -25,12 +25,12 @@ class Metagraph:
     def __init__(
         self,
         substrate_interface: SubstrateInterface | None,
-        netuid: int,
+        netuid: str,
         load_old_nodes: bool = True,
     ) -> None:
         self.substrate_interface = substrate_interface
         self.nodes: dict[str, models.Node] = {}
-        self.netuid = netuid
+        self.netuid = int(netuid)
         self.is_in_sync = False
         self.stop_event = threading.Event()
         self.load_old_nodes = load_old_nodes
@@ -60,6 +60,7 @@ class Metagraph:
 
     def sync_nodes(self) -> None:
         logger.info("Syncing nodes...")
+        assert self.substrate_interface is not None, "Substrate interface is not initialized"
         nodes = fetch_nodes.get_nodes_for_netuid(self.substrate_interface, self.netuid)
         self.nodes = {node.hotkey: node for node in nodes}
         logger.info(f"✅ Successfully synced {len(self.nodes)} nodes!")

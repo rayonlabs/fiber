@@ -26,6 +26,7 @@ def factory_app(debug: bool = False) -> FastAPI:
     async def lifespan(app: FastAPI):
         config = configuration.factory_config()
         metagraph = config.metagraph
+        sync_thread = None
         if metagraph.substrate_interface is not None:
             sync_thread = threading.Thread(target=metagraph.periodically_sync_nodes, daemon=True)
             sync_thread.start()
@@ -36,7 +37,7 @@ def factory_app(debug: bool = False) -> FastAPI:
 
         config.encryption_keys_handler.close()
         metagraph.shutdown()
-        if metagraph.substrate_interface is not None:
+        if metagraph.substrate_interface is not None and sync_thread is not None:
             sync_thread.join()
 
     app = FastAPI(lifespan=lifespan, debug=debug)

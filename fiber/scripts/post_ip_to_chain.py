@@ -39,6 +39,12 @@ def main():
     wallet_name = args_dict.get("wallet.name")
     wallet_hotkey = args_dict.get("wallet.hotkey")
 
+    assert isinstance(wallet_name, str)
+    assert isinstance(wallet_hotkey, str)
+    assert isinstance(chain_endpoint, str)
+    assert isinstance(network, str)
+
+
     substrate_interface = interface.get_substrate_interface(subtensor_address=chain_endpoint, subtensor_network=network)
     keypair = chain_utils.load_hotkey_keypair(wallet_name=wallet_name, hotkey_name=wallet_hotkey)
     coldkey_keypair_pub = chain_utils.load_coldkeypub_keypair(wallet_name=wallet_name)

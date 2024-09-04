@@ -70,7 +70,7 @@ async def make_non_streamed_post(
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
     response = await httpx_client.post(
-        data=encrypted_payload,
+        content=encrypted_payload,   # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,
@@ -87,7 +87,7 @@ async def make_streamed_post(
     endpoint: str,
     payload: dict[str, Any],
     timeout: int = 10,
-) -> AsyncGenerator[str, None]:
+) -> AsyncGenerator[bytes, None]:
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
@@ -95,7 +95,7 @@ async def make_streamed_post(
     async with httpx_client.stream(
         method="POST",
         url=server_address + endpoint,
-        data=encrypted_payload,
+        content=encrypted_payload,  # NOTE: can this be content?
         headers=headers,
         timeout=timeout,
     ) as response:

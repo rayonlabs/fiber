@@ -23,7 +23,7 @@ T = TypeVar("T", bound=BaseModel)
 load_dotenv()
 
 
-def _derive_key_from_string(input_string: str, salt: bytes = b"salt_") -> bytes:
+def _derive_key_from_string(input_string: str, salt: bytes = b"salt_") -> str:
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -46,6 +46,9 @@ def factory_config() -> Config:
     load_old_nodes = bool(os.getenv("LOAD_OLD_NODES", True))
     min_stake_threshold = int(os.getenv("MIN_STAKE_THRESHOLD", 1_000))
     refresh_nodes = os.getenv("REFRESH_NODES", "true").lower() == "true"
+
+    assert netuid is not None, "Must set NETUID env var please!"
+
     if refresh_nodes:
         substrate_interface = interface.get_substrate_interface(subtensor_network, subtensor_address)
         metagraph = Metagraph(
@@ -56,8 +59,7 @@ def factory_config() -> Config:
     else:
         metagraph = Metagraph(substrate_interface=None, netuid=netuid, load_old_nodes=load_old_nodes)
 
-    if netuid is None:
-        raise ValueError("Must set NETUID env var please x)")
+
 
     keypair = chain_utils.load_hotkey_keypair(wallet_name, hotkey_name)
 

@@ -6,7 +6,9 @@ from fiber.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-def sign_message(keypair: Keypair, message: str) -> str:
+def sign_message(keypair: Keypair, message: str | None) -> str | None:
+    if message is None:
+        return None
     return f"0x{keypair.sign(message).hex()}"
 
 
@@ -20,7 +22,7 @@ def verify_signature(message: str | None, signature: str, ss58_address: str) -> 
         return False
 
 
-def construct_message_from_payload(body: str | bytes | dict) -> str:
+def construct_message_from_payload(body: str | bytes | dict) -> str | None:
     try:
         if isinstance(body, dict):
             return json.dumps(body, sort_keys=True, separators=(",", ":"))

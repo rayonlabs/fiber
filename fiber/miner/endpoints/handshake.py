@@ -1,5 +1,5 @@
 import time
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 
 from fiber.miner.core.configuration import Config
 from fiber.miner.dependencies import get_config, blacklist_low_stake, verify_signature
@@ -18,7 +18,6 @@ async def get_public_key(config: Config = Depends(get_config)):
 
 
 async def exchange_symmetric_key(
-    request: Request,
     payload: SymmetricKeyExchange,
     config: Config = Depends(get_config),
     _=Depends(blacklist_low_stake),

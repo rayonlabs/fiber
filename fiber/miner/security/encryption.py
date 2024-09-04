@@ -1,11 +1,10 @@
 import json
 from fastapi import Depends, HTTPException, Request
-from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from fastapi import Header
 from typing import Type, TypeVar
-
+from cryptography.hazmat.primitives.asymmetric import rsa
 from pydantic import BaseModel
 from fiber.miner.dependencies import get_config
 from fiber.miner.core.models.encryption import SymmetricKeyExchange
@@ -23,7 +22,7 @@ async def get_body(request: Request) -> bytes:
     return await request.body()
 
 
-def get_symmetric_key_b64_from_payload(payload: SymmetricKeyExchange, private_key: Fernet) -> str:
+def get_symmetric_key_b64_from_payload(payload: SymmetricKeyExchange, private_key: rsa.RSAPrivateKey) -> str:
     encrypted_symmetric_key = base64.b64decode(payload.encrypted_symmetric_key)
     try:
         decrypted_symmetric_key = private_key.decrypt(
@@ -40,7 +39,9 @@ def get_symmetric_key_b64_from_payload(payload: SymmetricKeyExchange, private_ke
     return base64_symmetric_key
 
 
-async def decrypt_symmetric_key_exchange_payload(config: Config = Depends(get_config), encrypted_payload: bytes = Depends(get_body)):
+async def decrypt_symmetric_key_exchange_payload(
+    config: Config = Depends(get_config), encrypted_payload: bytes = Depends(get_body)
+):
     decrypted_data = config.encryption_keys_handler.private_key.decrypt(
         encrypted_payload,
         padding.OAEP(

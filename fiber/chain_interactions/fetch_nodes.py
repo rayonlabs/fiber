@@ -66,11 +66,13 @@ def _encode_params(
         scale_obj = substrate_interface.create_scale_object(param["type"])
         if isinstance(params, list):
             param_data += scale_obj.encode(params[i])
+            assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
         else:
             if param["name"] not in params:
                 raise ValueError(f"Missing param {param['name']} in params dict.")
 
             param_data += scale_obj.encode(params[param["name"]])
+            assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
 
     return param_data.to_hex()
 
@@ -147,6 +149,7 @@ def get_nodes_for_netuid(substrate_interface: SubstrateInterface, netuid: int, b
         params=[netuid],
         block=block,
     )
+    assert hex_bytes_result is not None, "Failed to get neurons"
     if hex_bytes_result.startswith("0x"):
         bytes_result = bytes.fromhex(hex_bytes_result[2:])
     else:

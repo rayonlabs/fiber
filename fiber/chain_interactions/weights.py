@@ -27,9 +27,9 @@ def _query_subtensor(
 ) -> ScaleType:
     return substrate.query(
         module="SubtensorModule",
-        storage_function=name,
-        params=params,
-        block_hash=(None if block is None else substrate.get_block_hash(block)),
+        storage_function=name, 
+        params=params,  # type: ignore
+        block_hash=(None if block is None else substrate.get_block_hash(block)),  # type: ignore
     )
 
 
@@ -38,29 +38,34 @@ def _get_hyperparameter(
     param_name: str,
     netuid: int,
     block: int | None = None,
-) -> list[int] | None:
+) -> list[int] | int | None:
     subnet_exists = getattr(
-        _query_subtensor(substrate_interface, "NetworksAdded", block, [netuid]),
+        _query_subtensor(substrate_interface, "NetworksAdded", block, [netuid]),  # type: ignore
         "value",
         False,
     )
     if not subnet_exists:
         return None
     return getattr(
-        _query_subtensor(substrate_interface, param_name, block, [netuid]),
+        _query_subtensor(substrate_interface, param_name, block, [netuid]),  # type: ignore
         "value",
         None,
     )
 
 
 def _blocks_since_last_update(substrate_interface: SubstrateInterface, netuid: int, node_id: int) -> int | None:
-    current_block = substrate_interface.get_block_number(None)
+    current_block = substrate_interface.get_block_number(None)  # type: ignore
     last_updated = _get_hyperparameter(substrate_interface, "LastUpdate", netuid)
-    return None if last_updated is None else current_block - int(last_updated[node_id])
+    assert not isinstance(last_updated, int), "LastUpdate should be a list of ints"
+    if last_updated is None:
+        return None
+    return current_block - int(last_updated[node_id])
 
 
 def _min_interval_to_set_weights(substrate_interface: SubstrateInterface, netuid: int) -> int:
-    return _get_hyperparameter(substrate_interface, "WeightsSetRateLimit", netuid)
+    weights_set_rate_limit = _get_hyperparameter(substrate_interface, "WeightsSetRateLimit", netuid)
+    assert isinstance(weights_set_rate_limit, int), "WeightsSetRateLimit should be an int"
+    return weights_set_rate_limit
 
 
 def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[float]) -> tuple[list[int], list[int]]:
@@ -80,7 +85,7 @@ def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[floa
     return node_ids_formatted, node_weights_formatted
 
 
-def _format_error_message(error_message: dict) -> str:
+def _format_error_message(error_message: dict | None) -> str:
     err_type, err_name, err_description = (
         "UnknownType",
         "UnknownError",
@@ -135,6 +140,8 @@ def _send_extrinsic(
 def can_set_weights(substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
     blocks_since_update = _blocks_since_last_update(substrate_interface, netuid, validator_node_id)
     min_interval = _min_interval_to_set_weights(substrate_interface, netuid)
+    if min_interval is None:
+        return True
     return blocks_since_update is not None and blocks_since_update > min_interval
 
 

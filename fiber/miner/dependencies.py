@@ -25,7 +25,7 @@ async def verify_signature(request: Request, config: Config = Depends(get_config
 
     if not signatures.verify_signature(
         message=signatures.construct_message_from_payload(await request.body()),
-        ss58_address=request.headers.get("hotkey"),
+        ss58_address=hotkey,
         signature=signature,
     ):
         raise HTTPException(

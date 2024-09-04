@@ -42,12 +42,13 @@ include = [
 
 [tool.pyright]
 include = ["fiber"]
-exclude = ["**/node_modules", "**/__pycache__"]
+exclude = ["**/node_modules", "**/__pycache__", "**/test_*.py"]
 reportMissingImports = true
 reportMissingTypeStubs = false
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
 reportMissingModuleSource = false
+
 
 
 [tool.ruff]

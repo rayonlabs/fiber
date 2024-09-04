@@ -34,8 +34,8 @@ class EncryptionKeysHandler:
             self.symmetric_keys_fernets[hotkey_ss58_address] = {}
         self.symmetric_keys_fernets[hotkey_ss58_address][uuid] = symmetric_key_info
 
-    def get_symmetric_key(self, hotkey_ss58_address: str, uuid: str) -> SymmetricKeyInfo | None:
-        return self.symmetric_keys_fernets.get(hotkey_ss58_address, {}).get(uuid)
+    def get_symmetric_key(self, hotkey_ss58_address: str, uuid: str) -> SymmetricKeyInfo:
+        return self.symmetric_keys_fernets.get(hotkey_ss58_address, {})[uuid]
 
     def save_symmetric_keys(self) -> None:
         filename = f"{self.hotkey}_{mcst.SYMMETRIC_KEYS_FILENAME}"
@@ -63,7 +63,7 @@ class EncryptionKeysHandler:
                 encrypted_data = f.read()
 
             decrypted_data = self.asymmetric_fernet.decrypt(encrypted_data)
-            loaded_keys: dict[str, dict[str, str]] = json.loads(decrypted_data.decode())
+            loaded_keys: dict[str, dict[str, dict[str, str]]] = json.loads(decrypted_data.decode())
 
             self.symmetric_keys_fernets = {
                 hotkey: {
