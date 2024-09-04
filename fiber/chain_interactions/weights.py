@@ -53,28 +53,18 @@ def _get_hyperparameter(
     )
 
 
-def _blocks_since_last_update(
-    substrate_interface: SubstrateInterface, netuid: int, node_id: int
-) -> int | None:
+def _blocks_since_last_update(substrate_interface: SubstrateInterface, netuid: int, node_id: int) -> int | None:
     current_block = substrate_interface.get_block_number(None)
     last_updated = _get_hyperparameter(substrate_interface, "LastUpdate", netuid)
     return None if last_updated is None else current_block - int(last_updated[node_id])
 
 
-def _min_interval_to_set_weights(
-    substrate_interface: SubstrateInterface, netuid: int
-) -> int:
+def _min_interval_to_set_weights(substrate_interface: SubstrateInterface, netuid: int) -> int:
     return _get_hyperparameter(substrate_interface, "WeightsSetRateLimit", netuid)
 
 
-def _normalize_and_quantize_weights(
-    node_ids: list[int], node_weights: list[float]
-) -> tuple[list[int], list[int]]:
-    if (
-        len(node_ids) != len(node_weights)
-        or any(uid < 0 for uid in node_ids)
-        or any(weight < 0 for weight in node_weights)
-    ):
+def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[float]) -> tuple[list[int], list[int]]:
+    if len(node_ids) != len(node_weights) or any(uid < 0 for uid in node_ids) or any(weight < 0 for weight in node_weights):
         raise ValueError("Invalid input: length mismatch or negative values")
     if not any(node_weights):
         return [], []
@@ -142,12 +132,8 @@ def _send_extrinsic(
     return False, _format_error_message(response.error_message)
 
 
-def can_set_weights(
-    substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int
-) -> bool:
-    blocks_since_update = _blocks_since_last_update(
-        substrate_interface, netuid, validator_node_id
-    )
+def can_set_weights(substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
+    blocks_since_update = _blocks_since_last_update(substrate_interface, netuid, validator_node_id)
     min_interval = _min_interval_to_set_weights(substrate_interface, netuid)
     return blocks_since_update is not None and blocks_since_update > min_interval
 
@@ -164,9 +150,7 @@ def set_node_weights(
     wait_for_finalization: bool = False,
     max_attempts: int = 1,
 ) -> bool:
-    node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(
-        node_ids, node_weights
-    )
+    node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
     rpc_call = substrate_interface.compose_call(
         call_module="SubtensorModule",
         call_function="set_weights",
@@ -178,18 +162,12 @@ def set_node_weights(
         },
     )
 
-    extrinsic_to_send = substrate_interface.create_signed_extrinsic(
-        call=rpc_call, keypair=keypair, era={"period": 5}
-    )
+    extrinsic_to_send = substrate_interface.create_signed_extrinsic(call=rpc_call, keypair=keypair, era={"period": 5})
 
     weights_can_be_set = False
     for attempt in range(1, max_attempts + 1):
         if not can_set_weights(substrate_interface, netuid, validator_node_id):
-            logger.info(
-                logger.info(
-                    f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs..."
-                )
-            )
+            logger.info(logger.info(f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs..."))
             time.sleep(30)
             continue
         else:

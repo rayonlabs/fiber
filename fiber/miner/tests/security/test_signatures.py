@@ -5,6 +5,7 @@ from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
 
+
 def sign_message(keypair: Keypair, message: str) -> str:
     return keypair.sign(message).hex()
 
@@ -12,7 +13,10 @@ def sign_message(keypair: Keypair, message: str) -> str:
 def verify_signature(message: str, signature: str, ss58_address: str) -> bool:
     keypair = Keypair(ss58_address=ss58_address)
     try:
-        return keypair.verify(message, bytes.fromhex(signature[2:] if signature.startswith("0x") else signature))
+        return keypair.verify(
+            message,
+            bytes.fromhex(signature[2:] if signature.startswith("0x") else signature),
+        )
     except ValueError:
         return False
 

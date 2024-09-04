@@ -11,7 +11,10 @@ import asyncio
 
 from fiber.miner.core.models.config import Config
 from fiber.miner.core.models.encryption import SymmetricKeyExchange, SymmetricKeyInfo
-from fiber.miner.security.encryption import decrypt_symmetric_key_exchange_payload, decrypt_general_payload
+from fiber.miner.security.encryption import (
+    decrypt_symmetric_key_exchange_payload,
+    decrypt_general_payload,
+)
 
 
 class TestModel(BaseModel):
@@ -38,7 +41,11 @@ class TestEncryption(unittest.IsolatedAsyncioTestCase):
         )
         encrypted_payload = self.private_key.public_key().encrypt(
             test_data.model_dump_json().encode(),
-            padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
 
         result = await decrypt_symmetric_key_exchange_payload(self.config_mock, encrypted_payload)

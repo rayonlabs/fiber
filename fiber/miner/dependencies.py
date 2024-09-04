@@ -7,16 +7,17 @@ from fiber.miner.security import signatures
 
 logger = get_logger(__name__)
 
+
 def get_config() -> Config:
     return configuration.factory_config()
 
-async def verify_signature(request: Request, config: Config = Depends(get_config)):
 
+async def verify_signature(request: Request, config: Config = Depends(get_config)):
     hotkey = request.headers.get("hotkey")
     if not hotkey:
         logger.debug("Hotkey header missing")
         raise HTTPException(status_code=400, detail="Hotkey header missing")
-    
+
     signature = request.headers.get("signature")
     if not signature:
         logger.debug("Signature header missing")
@@ -27,7 +28,11 @@ async def verify_signature(request: Request, config: Config = Depends(get_config
         ss58_address=request.headers.get("hotkey"),
         signature=signature,
     ):
-        raise HTTPException(status_code=401, detail="Oi, invalid signature, you're not who you said you were!")
+        raise HTTPException(
+            status_code=401,
+            detail="Oi, invalid signature, you're not who you said you were!",
+        )
+
 
 async def blacklist_low_stake(request: Request, config: Config = Depends(get_config)):
     metagraph = config.metagraph

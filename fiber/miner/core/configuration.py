@@ -47,18 +47,14 @@ def factory_config() -> Config:
     min_stake_threshold = int(os.getenv("MIN_STAKE_THRESHOLD", 1_000))
     refresh_nodes = os.getenv("REFRESH_NODES", "true").lower() == "true"
     if refresh_nodes:
-        substrate_interface = interface.get_substrate_interface(
-            subtensor_network, subtensor_address
-        )
+        substrate_interface = interface.get_substrate_interface(subtensor_network, subtensor_address)
         metagraph = Metagraph(
             substrate_interface=substrate_interface,
             netuid=netuid,
             load_old_nodes=load_old_nodes,
         )
     else:
-        metagraph = Metagraph(
-            substrate_interface=None, netuid=netuid, load_old_nodes=load_old_nodes
-        )
+        metagraph = Metagraph(substrate_interface=None, netuid=netuid, load_old_nodes=load_old_nodes)
 
     if netuid is None:
         raise ValueError("Must set NETUID env var please x)")
@@ -69,9 +65,7 @@ def factory_config() -> Config:
     if storage_encryption_key is None:
         storage_encryption_key = _derive_key_from_string(mcst.DEFAULT_ENCRYPTION_STRING)
 
-    encryption_keys_handler = key_management.EncryptionKeysHandler(
-        nonce_manager, storage_encryption_key, hotkey=hotkey_name
-    )
+    encryption_keys_handler = key_management.EncryptionKeysHandler(nonce_manager, storage_encryption_key, hotkey=hotkey_name)
 
     return Config(
         encryption_keys_handler=encryption_keys_handler,

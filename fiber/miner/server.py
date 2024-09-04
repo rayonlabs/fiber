@@ -27,9 +27,7 @@ def factory_app(debug: bool = False) -> FastAPI:
         config = configuration.factory_config()
         metagraph = config.metagraph
         if metagraph.substrate_interface is not None:
-            sync_thread = threading.Thread(
-                target=metagraph.periodically_sync_nodes, daemon=True
-            )
+            sync_thread = threading.Thread(target=metagraph.periodically_sync_nodes, daemon=True)
             sync_thread.start()
 
         yield

@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "namoray", email = "namoray@addemailhere.com" },
+    { name = "namoray", email = "nuevaamor@proton.me" },
 ]
 dependencies = [
     "substrate-interface==1.7.10",
@@ -35,8 +35,20 @@ include = [
     "fiber/**/*.py",
 ]
 
-
 [tool.hatch.build.targets.sdist]
 include = [
     "/fiber",
 ]
+
+[tool.pyright]
+include = ["fiber"]
+exclude = ["**/node_modules", "**/__pycache__"]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.10"
+pythonPlatform = "Linux"
+reportMissingModuleSource = false
+
+
+[tool.ruff]
+line-length = 120

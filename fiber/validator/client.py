@@ -12,9 +12,7 @@ from typing import AsyncGenerator
 logger = get_logger(__name__)
 
 
-def _get_headers(
-    symmetric_key_uuid: str, validator_ss58_address: str
-) -> dict[str, str]:
+def _get_headers(symmetric_key_uuid: str, validator_ss58_address: str) -> dict[str, str]:
     return {
         # TODO: Evauluate content type
         "Content-Type": "application/octet-stream",
@@ -90,7 +88,6 @@ async def make_streamed_post(
     payload: dict[str, Any],
     timeout: int = 10,
 ) -> AsyncGenerator[str, None]:
-
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
@@ -110,7 +107,7 @@ async def make_streamed_post(
             await response.aread()
             logger.error(f"HTTP Error {e.response.status_code}: {e.response.text}")
             raise
-        except Exception as e:
+        except Exception:
             # logger.error(f"Unexpected error: {str(e)}")
             # logger.exception("Full traceback:")
             raise

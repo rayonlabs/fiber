@@ -28,7 +28,11 @@ def get_symmetric_key_b64_from_payload(payload: SymmetricKeyExchange, private_ke
     try:
         decrypted_symmetric_key = private_key.decrypt(
             encrypted_symmetric_key,
-            padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
     except ValueError:
         raise HTTPException(status_code=401, detail="Oi, I can't decrypt that symmetric key, sorry")
@@ -36,12 +40,14 @@ def get_symmetric_key_b64_from_payload(payload: SymmetricKeyExchange, private_ke
     return base64_symmetric_key
 
 
-async def decrypt_symmetric_key_exchange_payload(
-    config: Config = Depends(get_config), encrypted_payload: bytes = Depends(get_body)
-):
+async def decrypt_symmetric_key_exchange_payload(config: Config = Depends(get_config), encrypted_payload: bytes = Depends(get_body)):
     decrypted_data = config.encryption_keys_handler.private_key.decrypt(
         encrypted_payload,
-        padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None,
+        ),
     )
 
     data_dict = json.loads(decrypted_data.decode())
@@ -55,11 +61,9 @@ def decrypt_general_payload(
     hotkey_ss58_address: str = Header(...),
     config: Config = Depends(get_config),
 ) -> T:
-
     symmetric_key_info = config.encryption_keys_handler.get_symmetric_key(hotkey_ss58_address, symmetric_key_uuid)
     if not symmetric_key_info:
         raise HTTPException(status_code=400, detail="No symmetric key found for that hotkey and uuid")
-
 
     decrypted_data = symmetric_key_info.fernet.decrypt(encrypted_payload)
 

@@ -61,7 +61,11 @@ class TestHandshake(unittest.TestCase):
         symmetric_key = b"test_symmetric_key"
         encrypted_symmetric_key = self.mock_encryption_keys_handler.private_key.public_key().encrypt(
             symmetric_key,
-            padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
 
         payload = SymmetricKeyExchange(
@@ -78,7 +82,9 @@ class TestHandshake(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "Symmetric key exchanged successfully"})
         self.mock_encryption_keys_handler.add_symmetric_key.assert_called_once_with(
-            payload.symmetric_key_uuid, payload.ss58_address, base64.b64encode(symmetric_key).decode()
+            payload.symmetric_key_uuid,
+            payload.ss58_address,
+            base64.b64encode(symmetric_key).decode(),
         )
 
     @patch("fiber.src.miner.security.signatures.verify_signature")

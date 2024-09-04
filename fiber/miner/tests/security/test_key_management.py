@@ -46,7 +46,10 @@ class TestKeyHandler(unittest.TestCase):
         }
         self.encryption_keys_handler._clean_expired_keys()
         self.assertEqual(list(self.encryption_keys_handler.symmetric_keys_fernets.keys()), ["hotkey1"])
-        self.assertEqual(list(self.encryption_keys_handler.symmetric_keys_fernets["hotkey1"].keys()), ["uuid2"])
+        self.assertEqual(
+            list(self.encryption_keys_handler.symmetric_keys_fernets["hotkey1"].keys()),
+            ["uuid2"],
+        )
 
     @patch("builtins.open", new_callable=mock_open)
     @patch("os.path.exists", return_value=True)
@@ -70,8 +73,14 @@ class TestKeyHandler(unittest.TestCase):
         for hotkey, keys in self.encryption_keys_handler.symmetric_keys_fernets.items():
             for uuid, key_info in keys.items():
                 self.assertIsInstance(key_info, SymmetricKeyInfo)
-                self.assertEqual(key_info.fernet._encryption_key, test_keys[hotkey][uuid].fernet._encryption_key)
-                self.assertEqual(key_info.fernet._signing_key, test_keys[hotkey][uuid].fernet._signing_key)
+                self.assertEqual(
+                    key_info.fernet._encryption_key,
+                    test_keys[hotkey][uuid].fernet._encryption_key,
+                )
+                self.assertEqual(
+                    key_info.fernet._signing_key,
+                    test_keys[hotkey][uuid].fernet._signing_key,
+                )
 
     @patch("os.path.exists", return_value=False)
     def test_load_symmetric_keys_file_not_exists(self, mock_exists):

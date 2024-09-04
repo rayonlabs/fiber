@@ -23,10 +23,7 @@ def _rao_to_tao(rao: float | int) -> float:
 
 def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
     neuron_info_copy = neuron_info_decoded.copy()
-    stake_dict = {
-        ss58_encode(coldkey, fcst.SS58_FORMAT): _rao_to_tao(stake)
-        for coldkey, stake in neuron_info_copy["stake"]
-    }
+    stake_dict = {ss58_encode(coldkey, fcst.SS58_FORMAT): _rao_to_tao(stake) for coldkey, stake in neuron_info_copy["stake"]}
     return models.Node(
         hotkey=ss58_encode(neuron_info_copy["hotkey"], fcst.SS58_FORMAT),
         coldkey=ss58_encode(neuron_info_copy["coldkey"], fcst.SS58_FORMAT),
@@ -45,9 +42,7 @@ def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
 
 
 def _get_nodes_from_vec8(vec_u8: bytes) -> list[models.Node]:
-    decoded_neuron_infos = chain_utils.create_scale_object_from_scale_encoding(
-        vec_u8, fcst.NEURON_INFO_LITE, is_vec=True
-    )
+    decoded_neuron_infos = chain_utils.create_scale_object_from_scale_encoding(vec_u8, fcst.NEURON_INFO_LITE, is_vec=True)
     if decoded_neuron_infos is None:
         return []
 
@@ -92,9 +87,7 @@ def _execute_rpc_request(
         reraise=True,
     )
     def make_substrate_call() -> dict[str, Any]:
-        block_hash = (
-            None if block is None else substrate_interface.get_block_hash(block)
-        )
+        block_hash = None if block is None else substrate_interface.get_block_hash(block)
         params = [method, data, block_hash] if block_hash else [method, data]
 
         return substrate_interface.rpc_request(
@@ -138,9 +131,7 @@ def _query_runtime_api(
 
     as_scale_bytes = scalecodec.ScaleBytes(json_result["result"])
 
-    scale_object = chain_utils.create_scale_object_from_scale_bytes(
-        return_type, as_scale_bytes
-    )
+    scale_object = chain_utils.create_scale_object_from_scale_bytes(return_type, as_scale_bytes)
 
     if scale_object.data.to_hex() == "0x0400":
         return None
@@ -148,9 +139,7 @@ def _query_runtime_api(
     return scale_object.decode()
 
 
-def get_nodes_for_netuid(
-    substrate_interface: SubstrateInterface, netuid: int, block: int | None = None
-) -> list[models.Node]:
+def get_nodes_for_netuid(substrate_interface: SubstrateInterface, netuid: int, block: int | None = None) -> list[models.Node]:
     hex_bytes_result = _query_runtime_api(
         substrate_interface=substrate_interface,
         runtime_api="NeuronInfoRuntimeApi",

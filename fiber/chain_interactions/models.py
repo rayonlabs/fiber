@@ -2,6 +2,7 @@ from typing import TypedDict
 from pydantic import BaseModel
 from cryptography.fernet import Fernet
 
+
 class Node(BaseModel):
     hotkey: str
     coldkey: str
@@ -19,9 +20,8 @@ class Node(BaseModel):
     fernet: Fernet | None = None
     symmetric_key_uuid: str | None = None
 
-    model_config = {
-        "arbitrary_types_allowed": True
-    }
+    model_config = {"arbitrary_types_allowed": True}
+
 
 class ParamWithTypes(TypedDict):
     name: str

@@ -10,9 +10,19 @@ logger = get_logger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(description="Post node IP to chain")
-    parser.add_argument("--subtensor.chain_endpoint", type=str, required=False, help="Chain address", default=None)
     parser.add_argument(
-        "--subtensor.network", type=str, required=False, help="Chain network", default=fcst.FINNEY_NETWORK
+        "--subtensor.chain_endpoint",
+        type=str,
+        required=False,
+        help="Chain address",
+        default=None,
+    )
+    parser.add_argument(
+        "--subtensor.network",
+        type=str,
+        required=False,
+        help="Chain network",
+        default=fcst.FINNEY_NETWORK,
     )
     parser.add_argument("--wallet.name", type=str, required=False, help="Wallet name", default="default")
     parser.add_argument("--wallet.hotkey", type=str, required=False, help="Hotkey name", default="default")

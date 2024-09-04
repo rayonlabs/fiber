@@ -27,5 +27,10 @@ async def example_subnet_request(
 
 def factory_router() -> APIRouter:
     router = APIRouter()
-    router.add_api_route("/example-subnet-request", example_subnet_request, tags=["Example"], methods=["POST"])
+    router.add_api_route(
+        "/example-subnet-request",
+        example_subnet_request,
+        tags=["Example"],
+        methods=["POST"],
+    )
     return router
