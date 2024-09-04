@@ -58,15 +58,15 @@ def factory_config() -> Config:
     else:
         metagraph = Metagraph(substrate_interface=None, netuid=netuid, load_old_nodes=load_old_nodes)
 
-
-
     keypair = chain_utils.load_hotkey_keypair(wallet_name, hotkey_name)
 
     storage_encryption_key = os.getenv("STORAGE_ENCRYPTION_KEY")
     if storage_encryption_key is None:
         storage_encryption_key = _derive_key_from_string(mcst.DEFAULT_ENCRYPTION_STRING)
 
-    encryption_keys_handler = key_management.EncryptionKeysHandler(nonce_manager, storage_encryption_key, hotkey=hotkey_name)
+    encryption_keys_handler = key_management.EncryptionKeysHandler(
+        nonce_manager, storage_encryption_key, hotkey=hotkey_name
+    )
 
     return Config(
         encryption_keys_handler=encryption_keys_handler,
