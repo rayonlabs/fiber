@@ -44,7 +44,7 @@ async def make_non_streamed_get(
     validator_ss58_address: str,
     symmetric_key_uuid: str,
     endpoint: str,
-    timeout: int = 10,
+    timeout: float = 10,
 ):
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
     logger.debug(f"headers: {headers}")
@@ -64,7 +64,7 @@ async def make_non_streamed_post(
     symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
-    timeout: int = 10,
+    timeout: float = 10,
 ) -> httpx.Response:
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
@@ -85,7 +85,7 @@ async def make_streamed_post(
     symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
-    timeout: int = 10,
+    timeout: float = 10,
 ) -> AsyncGenerator[bytes, None]:
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
