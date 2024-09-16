@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from fiber.miner.core import configuration
 from fiber.miner.core.models.config import Config
 from fastapi import Depends, Request, HTTPException
@@ -49,10 +50,15 @@ async def blacklist_low_stake(request: Request, config: Config = Depends(get_con
         raise HTTPException(status_code=403, detail="Insufficient stake")
 
 
-async def verify_nonce(request: Request, config: Config = Depends(get_config)):
-    nonce = (await request.json()).get("nonce")
-    if not nonce:
-        raise HTTPException(status_code=400, detail="Nonce missing from body")
+class NoncePayload(BaseModel):
+    nonce: str
 
-    if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
-        raise HTTPException(status_code=401, detail="Oi, invalid nonce!!")
+async def verify_nonce(
+    payload: NoncePayload,
+    config: Config = Depends(get_config),
+):
+    if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(payload.nonce):
+        raise HTTPException(
+            status_code=401,
+            detail="Oi, invalid nonce!!",
+        )
