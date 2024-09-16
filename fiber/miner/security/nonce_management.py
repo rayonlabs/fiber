@@ -19,25 +19,22 @@ class NonceManager:
             logger.debug(f"Invalid nonce because it's a collision: {nonce}")
             return False
 
+
         # If nonce isn't the right format, don't add it to self._nonces to prevent abuse
-        try:
-            if int(nonce) > 10**10:
-                raise ValueError()
-        except ValueError:
-            logger.debug(f"Invalid nonce because it's not castable to an integeer which is less than 10 ** 10. Nonce: {nonce}")
-            return False
-
-        # Nonces, even invalid ones, can only be used once.
-        self.add_nonce(nonce)
-
         # Check for recency
         current_time_ns = time.time_ns()
         logger.debug(f"Current time: {current_time_ns}")
         try:
             timestamp_ns = int(nonce.split("_")[0])
+            if timestamp_ns > 10**10:
+                raise ValueError()
         except (ValueError, IndexError):
-            logger.debug(f"Invalid nonce because it's not in the right timestamp format: {nonce}")
+            logger.debug(f"Invalid nonce because it's not in the right format. Nonce: {nonce}")
             return False
+
+
+        # Nonces, can only be used once.
+        self.add_nonce(nonce)
 
         if current_time_ns - timestamp_ns > mcst.NONCE_WINDOW_NS:
             logger.debug(f"Invalid nonce because it's too old: {nonce}")
