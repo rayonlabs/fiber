@@ -52,13 +52,3 @@ async def blacklist_low_stake(request: Request, config: Config = Depends(get_con
 
 class NoncePayload(BaseModel):
     nonce: str
-
-async def verify_nonce(
-    payload: NoncePayload,
-    config: Config = Depends(get_config),
-):
-    if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(payload.nonce):
-        raise HTTPException(
-            status_code=401,
-            detail="Oi, invalid nonce!!",
-        )

@@ -1,8 +1,8 @@
 import time
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from fiber.miner.core.configuration import Config
-from fiber.miner.dependencies import get_config, blacklist_low_stake, verify_nonce, verify_signature
+from fiber.miner.dependencies import get_config, blacklist_low_stake, verify_signature
 from fiber.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
 from fiber.miner.security.encryption import get_symmetric_key_b64_from_payload
 from cryptography.fernet import Fernet
@@ -21,6 +21,12 @@ async def exchange_symmetric_key(
     payload: SymmetricKeyExchange,
     config: Config = Depends(get_config),
 ):
+    if config.encryption_keys_handler.nonce_manager.nonce_is_valid(payload.nonce):
+        raise HTTPException(
+            status_code=401,
+            detail="Oi, I've seen that nonce before. Don't send me the nonce more than once",
+        )
+
     base64_symmetric_key = get_symmetric_key_b64_from_payload(payload, config.encryption_keys_handler.private_key)
     fernet = Fernet(base64_symmetric_key)
     config.encryption_keys_handler.add_symmetric_key(
@@ -42,7 +48,6 @@ def factory_router() -> APIRouter:
         dependencies=[
             Depends(blacklist_low_stake),
             Depends(verify_signature),
-            Depends(verify_nonce),
         ],
     )
     return router
