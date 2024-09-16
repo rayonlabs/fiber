@@ -29,6 +29,7 @@ def construct_message_from_payload(body: str | bytes | dict) -> str | None:
         elif isinstance(body, bytes):
             body_str = body.decode()
         else:
+            assert isinstance(body, str)
             body_str = body
 
         try:
