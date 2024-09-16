@@ -47,3 +47,12 @@ async def blacklist_low_stake(request: Request, config: Config = Depends(get_con
 
     if node.stake <= config.min_stake_threshold:
         raise HTTPException(status_code=403, detail="Insufficient stake")
+
+
+async def verify_nonce(request: Request, config: Config = Depends(get_config)):
+    nonce = (await request.json()).get("nonce")
+    if not nonce:
+        raise HTTPException(status_code=400, detail="Nonce missing from body")
+
+    if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
+        raise HTTPException(status_code=401, detail="Oi, invalid nonce!!")

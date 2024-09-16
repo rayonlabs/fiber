@@ -6,7 +6,6 @@ class NonceManager:
     def __init__(self) -> None:
         self._nonces: dict[str, float] = {}
         self.TTL: int = 60 * 2
-        self.nonce_window_ns = mcst.NONCE_WINDOW_NS
 
     def add_nonce(self, nonce: str) -> None:
         self._nonces[nonce] = time.time() + self.TTL
@@ -15,7 +14,15 @@ class NonceManager:
         # Check for collision
         if nonce in self._nonces:
             return False
+    
+        # If nonce isn't the right format, don't add it to self._nonces to prevent abuse
+        try:
+            if int(nonce) > 10 ** 10:
+                raise ValueError()
+        except ValueError:
+            return False
 
+        # Nonces, even invalid ones, can only be used once.
         self.add_nonce(nonce)
 
         # Check for recency
@@ -25,11 +32,11 @@ class NonceManager:
         except (ValueError, IndexError):
             return False
 
-        if current_time_ns - timestamp_ns > self.nonce_window_ns:
+        if current_time_ns - timestamp_ns >  mcst.NONCE_WINDOW_NS:
             return False  # What an Old Nonce
 
-        if timestamp_ns - current_time_ns > 30_000_000_000:
-            return False  # That nonce is too new, and will be suspectible to replay attacks
+        if timestamp_ns - current_time_ns > mcst.NONCE_WINDOW_NS:
+            return False  # That nonce is from the distant future, and will be suspectible to replay attacks
 
         return True
 
