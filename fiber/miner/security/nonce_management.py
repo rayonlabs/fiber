@@ -24,7 +24,7 @@ class NonceManager:
             if int(nonce) > 10**10:
                 raise ValueError()
         except ValueError:
-            logger.debug("Invalid nonce because it's not castable to an integeer which is less than 10 ** 10")
+            logger.debug(f"Invalid nonce because it's not castable to an integeer which is less than 10 ** 10. Nonce: {nonce}")
             return False
 
         # Nonces, even invalid ones, can only be used once.
