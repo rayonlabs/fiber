@@ -6,8 +6,10 @@ from fiber import constants as bcst
 from cryptography.fernet import Fernet
 from fiber.chain_interactions.models import Node
 from fiber.logging_utils import get_logger
-
+from fiber import constants as cst
 from typing import AsyncGenerator
+
+from fiber.validator.generate_nonce import generate_nonce
 
 logger = get_logger(__name__)
 
@@ -67,6 +69,8 @@ async def make_non_streamed_post(
     timeout: float = 10,
 ) -> httpx.Response:
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+
+    payload[cst.NONCE] = generate_nonce()
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
     response = await httpx_client.post(
         content=encrypted_payload,   # NOTE: can this be content?
@@ -89,6 +93,7 @@ async def make_streamed_post(
 ) -> AsyncGenerator[bytes, None]:
     headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
 
+    payload[cst.NONCE] = generate_nonce()
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
 
     async with httpx_client.stream(
