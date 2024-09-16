@@ -1,5 +1,8 @@
 import time
 from fiber.miner.core import miner_constants as mcst
+from fiber.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 class NonceManager:
@@ -13,13 +16,15 @@ class NonceManager:
     def nonce_is_valid(self, nonce: str) -> bool:
         # Check for collision
         if nonce in self._nonces:
+            logger.debug(f"Invalid nonce because it's a collision: {nonce}")
             return False
-    
+
         # If nonce isn't the right format, don't add it to self._nonces to prevent abuse
         try:
-            if int(nonce) > 10 ** 10:
+            if int(nonce) > 10**10:
                 raise ValueError()
         except ValueError:
+            logger.debug("Invalid nonce because it's not castable to an integeer which is less than 10 ** 10")
             return False
 
         # Nonces, even invalid ones, can only be used once.
@@ -27,15 +32,19 @@ class NonceManager:
 
         # Check for recency
         current_time_ns = time.time_ns()
+        logger.debug(f"Current time: {current_time_ns}")
         try:
             timestamp_ns = int(nonce.split("_")[0])
         except (ValueError, IndexError):
+            logger.debug(f"Invalid nonce because it's not in the right timestamp format: {nonce}")
             return False
 
-        if current_time_ns - timestamp_ns >  mcst.NONCE_WINDOW_NS:
+        if current_time_ns - timestamp_ns > mcst.NONCE_WINDOW_NS:
+            logger.debug(f"Invalid nonce because it's too old: {nonce}")
             return False  # What an Old Nonce
 
         if timestamp_ns - current_time_ns > mcst.NONCE_WINDOW_NS:
+            logger.debug(f"Invalid nonce because it's from the distant future: {nonce}")
             return False  # That nonce is from the distant future, and will be suspectible to replay attacks
 
         return True
