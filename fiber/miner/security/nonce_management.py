@@ -26,7 +26,7 @@ class NonceManager:
         logger.debug(f"Current time: {current_time_ns}")
         try:
             timestamp_ns = int(nonce.split("_")[0])
-            if timestamp_ns > 10**10:
+            if timestamp_ns > 10**20:
                 raise ValueError()
         except (ValueError, IndexError):
             logger.debug(f"Invalid nonce because it's not in the right format. Nonce: {nonce}")
