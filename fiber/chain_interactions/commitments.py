@@ -35,7 +35,9 @@ def _deserialize_commitment_field(field: dict[str, bytes | str]) -> CommitmentDa
         if len(data) != expected_field_data_length:
             raise ValueError(f"Got commitment raw field expecting {expected_field_data_length} data but got {len(data)} data")
 
-    return CommitmentDataFieldType(data_type), data
+    field: CommitmentDataField = (CommitmentDataFieldType(data_type), data)
+
+    return field
 
 
 @retry(
