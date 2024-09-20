@@ -38,6 +38,7 @@ class Metagraph:
 
         # This is mainly to speed up development
         if load_old_nodes:
+            logger.debug("Loading nodes from file...")
             self.load_nodes()
             if len(self.nodes) > 0:
                 self.is_in_sync = True

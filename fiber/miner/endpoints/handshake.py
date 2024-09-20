@@ -25,7 +25,7 @@ async def exchange_symmetric_key(
     if config.encryption_keys_handler.nonce_manager.nonce_is_valid(payload.nonce):
         raise HTTPException(
             status_code=401,
-            detail="Oi, I've seen that nonce before. Don't send me the nonce more than once",
+            detail="Oi, that nonce is invalid! Don't send me the nonce more than once",
         )
 
     base64_symmetric_key = get_symmetric_key_b64_from_payload(payload, config.encryption_keys_handler.private_key)
