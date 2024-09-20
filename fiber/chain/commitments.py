@@ -117,15 +117,15 @@ def set_commitment(
 
     if response.is_success:
         if wait_for_finalization:
-            logger.info("✅ Successfully set weights and finalized")
+            logger.info("✅ Successfully commited and finalized")
         elif wait_for_inclusion:
-            logger.info("✅ Successfully set weights and included")
+            logger.info("✅ Successfully commited and included")
         else:
-            logger.info("✅ Successfully set weights")
+            logger.info("✅ Successfully commited")
 
         return True
     else:
-        logger.error(f"❌ Failed to set weights: {format_error_message(response.error_message)}")
+        logger.error(f"❌ Failed to commit: {format_error_message(response.error_message)}")
 
         return False
 
