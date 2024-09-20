@@ -44,7 +44,7 @@ async def perform_handshake(
 
 async def get_public_encryption_key(httpx_client: httpx.AsyncClient, server_address: str, timeout: int = 3) -> rsa.RSAPublicKey:
     response = await httpx_client.get(url=f"{server_address}/{bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}", timeout=timeout)
-    logger.debug(f"Response from {server_address} for {bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}: {response.json()}")
+    logger.debug(f"Response from {server_address} for {bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}: {response.text}")
     response.raise_for_status()
     data = encryption.PublicKeyResponse(**response.json())
     public_key_pem = data.public_key.encode()
@@ -81,6 +81,6 @@ async def send_symmetric_key_to_server(
         timeout=timeout,
         headers=headers,
     )
-    logger.debug(f"Response from {server_address} for {bcst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}: {response.json()}")
+    logger.debug(f"Response from {server_address} for {bcst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}: {response.text}")
     response.raise_for_status()
     return response.status_code == 200

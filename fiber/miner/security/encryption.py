@@ -71,9 +71,9 @@ def decrypt_general_payload(
     data_dict: dict = json.loads(decrypted_data.decode())
     if check_nonce:
         nonce: str = data_dict.get("nonce", "")
-        if config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
+        if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
             raise HTTPException(
                 status_code=401,
-                detail="Oi, I've seen that nonce before. Don't send me the nonce more than once",
+                detail="Oi, nonce invalid!",
             )
     return model(**data_dict)
