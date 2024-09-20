@@ -49,7 +49,12 @@ pythonVersion = "3.10"
 pythonPlatform = "Linux"
 reportMissingModuleSource = false
 
-
-
 [tool.ruff]
-line-length = 120
+line-length = 130
+
+[lint.isort]
+lines-after-imports = 2
+force-single-line   = true
+
+[lint]
+ignore = ["E402"]
