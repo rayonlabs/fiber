@@ -56,7 +56,6 @@ async def decrypt_symmetric_key_exchange_payload(
 
 def decrypt_general_payload(
     model: Type[T],
-    check_nonce: bool = True,
     encrypted_payload: bytes = Depends(get_body),
     symmetric_key_uuid: str = Header(...),
     hotkey_ss58_address: str = Header(...),
@@ -69,11 +68,12 @@ def decrypt_general_payload(
     decrypted_data = symmetric_key_info.fernet.decrypt(encrypted_payload)
 
     data_dict: dict = json.loads(decrypted_data.decode())
-    if check_nonce:
-        nonce: str = data_dict.get("nonce", "")
-        if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
-            raise HTTPException(
-                status_code=401,
-                detail="Oi, nonce invalid!",
-            )
+
+    # below needs sortin'
+    # nonce: str = data_dict.get("nonce", "")
+    # if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
+    #     raise HTTPException(
+    #         status_code=401,
+    #         detail="Oi, nonce invalid!",
+    #     )
     return model(**data_dict)
