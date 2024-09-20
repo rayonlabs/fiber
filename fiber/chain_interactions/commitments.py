@@ -7,39 +7,18 @@ from substrateinterface import SubstrateInterface, Keypair
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber.chain_interactions.chain_utils import format_error_message
+from fiber.chain_interactions.models import CommitmentDataField, CommitmentDataFieldType, CommitmentQuery, RawCommitmentQuery
+from fiber.constants import EMPTY_COMMITMENT_FIELD_TYPE
 
 
-class DataFieldType(Enum):
-    RAW = "Raw"
-    BLAKE_TWO_256 = "BlakeTwo256"
-    SHA_256 = "Sha256"
-    KECCAK_256 = "Keccak256"
-    SHA_THREE_256 = "ShaThree256"
-
-
-CommitmentDataField: TypeAlias = tuple[DataFieldType, bytes] | None
-
-
-class CommitmentQuery(BaseModel):
-    fields: list[CommitmentDataField]
-    block: int
-    deposit: int
-
-
-class RawCommitment(BaseModel):
-    data: bytes
-    block: int
-    deposit: int
-
-
-def _serialize_field(field: CommitmentDataField):
+def _serialize_field(field: CommitmentDataField) -> dict[str, bytes]:
     if not field:
-        return {str(None): b''}
+        return {EMPTY_COMMITMENT_FIELD_TYPE: b''}
 
     data_type, data = field
 
-    if data_type == DataFieldType.RAW:
-        serialized_data_type = DataFieldType.RAW.value + str(len(data))
+    if data_type == CommitmentDataFieldType.RAW:
+        serialized_data_type = CommitmentDataFieldType.RAW.value + str(len(data))
     else:
         serialized_data_type = data_type.value
 
@@ -49,18 +28,18 @@ def _serialize_field(field: CommitmentDataField):
 def _deserialize_field(field: dict[str, bytes | str]) -> CommitmentDataField:
     data_type, data = field.items().__iter__().__next__()
 
-    if data_type == str(None):
+    if data_type == EMPTY_COMMITMENT_FIELD_TYPE:
         return None
 
-    if data_type.startswith(DataFieldType.RAW.value):
-        expected_length = int(data_type[len(DataFieldType.RAW.value):])
-        data_type = DataFieldType.RAW.value
+    if data_type.startswith(CommitmentDataFieldType.RAW.value):
+        expected_length = int(data_type[len(CommitmentDataFieldType.RAW.value):])
+        data_type = CommitmentDataFieldType.RAW.value
         data = bytes.fromhex(data[2:])
 
         if len(data) != expected_length:
             raise ValueError(f"Got commitment raw field expecting {expected_length} data but got {len(data)} data")
 
-    return DataFieldType(data_type), data
+    return CommitmentDataFieldType(data_type), data
 
 
 @retry(
@@ -98,7 +77,7 @@ def set_commitment(
     """
     Commit custom fields to the chain
     Arguments:
-        fields: A list of fields as data type to value tuples, for example (DataFieldType.RAW, b'hello world')
+        fields: A list of fields as data type to value tuples, for example (CommitmentDataFieldType.RAW, b'hello world')
     """
 
     mapped_fields = [[
@@ -183,7 +162,7 @@ def publish_raw_commitment(
         substrate_interface,
         keypair,
         netuid,
-        [(DataFieldType.RAW, data)],
+        [(CommitmentDataFieldType.RAW, data)],
         wait_for_inclusion,
         wait_for_finalization
     )
@@ -194,7 +173,7 @@ def get_raw_commitment(
     netuid: int,
     hotkey: str,
     block: int | None = None,
-) -> RawCommitment | None:
+) -> RawCommitmentQuery | None:
     """
     Helper function for getting single field raw byte-string value after publishing with publish_raw_commitment
     returns: None if publish_raw_commitment has not been called before
@@ -212,12 +191,12 @@ def get_raw_commitment(
 
     data_type, data = field
 
-    if data_type != DataFieldType.RAW:
+    if data_type != CommitmentDataFieldType.RAW:
         raise ValueError(
-            f"Commitment for {hotkey} in netuid {netuid} is of type {data_type.value} and not {DataFieldType.RAW.value}"
+            f"Commitment for {hotkey} in netuid {netuid} is of type {data_type.value} and not {CommitmentDataFieldType.RAW.value}"
         )
 
-    return RawCommitment(
+    return RawCommitmentQuery(
         data=data,
         block=commitment.block,
         deposit=commitment.deposit,
