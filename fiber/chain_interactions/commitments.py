@@ -60,7 +60,7 @@ def _deserialize_field(field: dict[str, bytes | str]) -> CommitmentDataField:
         data = bytes.fromhex(data[2:])
 
         if len(data) != expected_length:
-            raise ValueError(f"Got commitment field expecting {expected_length} data but got {len(data)} data")
+            raise ValueError(f"Got commitment raw field expecting {expected_length} data but got {len(data)} data")
 
     return DataFieldType(data_type), data
 
