@@ -52,6 +52,19 @@ def create_scale_object_from_scale_encoding(
     return scale_object.decode()
 
 
+def format_error_message(error_message: dict | None) -> str:
+    err_type, err_name, err_description = (
+        "UnknownType",
+        "UnknownError",
+        "Unknown Description",
+    )
+    if isinstance(error_message, dict):
+        err_type = error_message.get("type", err_type)
+        err_name = error_message.get("name", err_name)
+        err_description = error_message.get("docs", [err_description])[0]
+    return f"substrate returned `{err_name} ({err_type})` error. Description: `{err_description}`"
+
+
 def get_hotkey_file_path(wallet_name: str, hotkey_name: str) -> Path:
     file_path = Path.home() / ".bittensor" / "wallets" / wallet_name / "hotkeys" / hotkey_name
     return file_path

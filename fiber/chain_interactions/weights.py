@@ -8,6 +8,7 @@ from substrateinterface import Keypair, SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
+from fiber.chain_interactions.chain_utils import format_error_message
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -88,19 +89,6 @@ def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[floa
     return node_ids_formatted, node_weights_formatted
 
 
-def _format_error_message(error_message: dict | None) -> str:
-    err_type, err_name, err_description = (
-        "UnknownType",
-        "UnknownError",
-        "Unknown Description",
-    )
-    if isinstance(error_message, dict):
-        err_type = error_message.get("type", err_type)
-        err_name = error_message.get("name", err_name)
-        err_description = error_message.get("docs", [err_description])[0]
-    return f"substrate returned `{err_name} ({err_type})` error. Description: `{err_description}`"
-
-
 def log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -119,7 +107,7 @@ def log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     reraise=True,
 )
 @log_and_reraise
-def send_extrinsic(
+def _send_extrinsic(
     substrate_interface: SubstrateInterface,
     extrinsic_to_send: GenericExtrinsic,
     wait_for_inclusion: bool = False,
@@ -140,7 +128,7 @@ def send_extrinsic(
         if response.is_success:
             return True, "Successfully set weights."
 
-        return False, _format_error_message(response.error_message)
+        return False, format_error_message(response.error_message)
 
 
 def can_set_weights(substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
@@ -199,7 +187,7 @@ def set_node_weights(
 
     logger.info("Attempting to set weights...")
 
-    success, error_message = send_extrinsic(
+    success, error_message = _send_extrinsic(
         substrate_interface=substrate_interface,
         extrinsic_to_send=extrinsic_to_send,
         wait_for_inclusion=wait_for_inclusion,

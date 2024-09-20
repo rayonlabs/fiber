@@ -6,7 +6,7 @@ from scalecodec import ScaleType
 from substrateinterface import SubstrateInterface, Keypair
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from fiber.chain_interactions.weights import log_and_reraise, send_extrinsic
+from fiber.chain_interactions.chain_utils import format_error_message
 
 
 class DataFieldType(Enum):
@@ -84,7 +84,6 @@ def _query_commitment(
     wait=wait_exponential(multiplier=1.5, min=2, max=5),
     reraise=True,
 )
-@log_and_reraise
 def set_commitment(
     substrate_interface: SubstrateInterface,
     keypair: Keypair,
@@ -115,14 +114,23 @@ def set_commitment(
         },
     )
 
-    extrinsic = substrate_interface.create_signed_extrinsic(call=call, keypair=keypair)
+    extrinsic_to_send = substrate_interface.create_signed_extrinsic(call=call, keypair=keypair)
 
-    return send_extrinsic(
-        substrate_interface,
-        extrinsic,
+    response = substrate_interface.submit_extrinsic(
+        extrinsic_to_send,
         wait_for_inclusion=wait_for_inclusion,
         wait_for_finalization=wait_for_finalization,
     )
+
+    if not wait_for_finalization and not wait_for_inclusion:
+        return True, "Not waiting for finalization or inclusion."
+
+    response.process_events()
+
+    if response.is_success:
+        return True, "Successfully submitted commitment."
+
+    return False, format_error_message(response.error_message)
 
 
 def query_commitment(
