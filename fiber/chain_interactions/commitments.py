@@ -6,7 +6,9 @@ from scalecodec import ScaleType
 from substrateinterface import SubstrateInterface, Keypair
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from fiber.chain_interactions.chain_utils import format_error_message
+from fiber.chain_interactions.chain_utils import format_error_message, load_hotkey_keypair
+from fiber.chain_interactions.interface import get_substrate_interface
+from fiber.constants import FINNEY_TEST_NETWORK
 
 
 class DataFieldType(Enum):
@@ -46,18 +48,21 @@ def _serialize_field(field: CommitmentDataField):
     return {serialized_data_type: data}
 
 
-def _deserialize_field(field: dict[str, bytes]) -> CommitmentDataField:
+def _deserialize_field(field: dict[str, bytes | str]) -> CommitmentDataField:
     data_type, data = field.items().__iter__().__next__()
 
     if data_type == str(None):
         return None
 
-    if data_type == DataFieldType.RAW.value + str(len(data)):
-        return DataFieldType.RAW, data
-    elif data_type.startswith(DataFieldType.RAW.value):
-        raise ValueError(f"Got commitment field type {data_type} but data size {len(data)}")
+    if data_type.startswith(DataFieldType.RAW.value):
+        expected_length = int(data_type[len(DataFieldType.RAW.value):])
+        data_type = DataFieldType.RAW.value
+        data = bytes.fromhex(data[2:])
 
-    return DataFieldType[data_type], data
+        if len(data) != expected_length:
+            raise ValueError(f"Got commitment field expecting {expected_length} data but got {len(data)} data")
+
+    return DataFieldType(data_type), data
 
 
 @retry(
@@ -219,3 +224,10 @@ def get_raw_commitment(
         block=commitment.block,
         deposit=commitment.deposit,
     )
+
+
+if __name__ == '__main__':
+    keypair = load_hotkey_keypair("wombo-test-wallet", "1")
+    subtrate = get_substrate_interface(FINNEY_TEST_NETWORK)
+
+    print(get_raw_commitment(subtrate, 159, keypair.ss58_address))
