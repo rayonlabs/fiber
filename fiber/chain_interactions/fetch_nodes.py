@@ -23,7 +23,9 @@ def _rao_to_tao(rao: float | int) -> float:
 
 def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
     neuron_info_copy = neuron_info_decoded.copy()
-    stake_dict = {ss58_encode(coldkey, fcst.SS58_FORMAT): _rao_to_tao(stake) for coldkey, stake in neuron_info_copy["stake"]}
+    stake_dict = {
+        ss58_encode(coldkey, fcst.SS58_FORMAT): _rao_to_tao(stake) for coldkey, stake in neuron_info_copy["stake"]
+    }
     return models.Node(
         hotkey=ss58_encode(neuron_info_copy["hotkey"], fcst.SS58_FORMAT),
         coldkey=ss58_encode(neuron_info_copy["coldkey"], fcst.SS58_FORMAT),
@@ -42,7 +44,9 @@ def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
 
 
 def _get_nodes_from_vec8(vec_u8: bytes) -> list[models.Node]:
-    decoded_neuron_infos = chain_utils.create_scale_object_from_scale_encoding(vec_u8, fcst.NEURON_INFO_LITE, is_vec=True)
+    decoded_neuron_infos = chain_utils.create_scale_object_from_scale_encoding(
+        vec_u8, fcst.NEURON_INFO_LITE, is_vec=True
+    )
     if decoded_neuron_infos is None:
         return []
 
@@ -141,19 +145,23 @@ def _query_runtime_api(
     return scale_object.decode()
 
 
-def get_nodes_for_netuid(substrate_interface: SubstrateInterface, netuid: int, block: int | None = None) -> list[models.Node]:
-    hex_bytes_result = _query_runtime_api(
-        substrate_interface=substrate_interface,
-        runtime_api="NeuronInfoRuntimeApi",
-        method="get_neurons_lite",
-        params=[netuid],
-        block=block,
-    )
-    assert hex_bytes_result is not None, "Failed to get neurons"
-    if hex_bytes_result.startswith("0x"):
-        bytes_result = bytes.fromhex(hex_bytes_result[2:])
-    else:
-        bytes_result = bytes.fromhex(hex_bytes_result)
+def get_nodes_for_netuid(
+    substrate_interface: SubstrateInterface, netuid: int, block: int | None = None
+) -> list[models.Node]:
+    # Context manager to close substrate interface connection after this
+    with substrate_interface as si:
+        hex_bytes_result = _query_runtime_api(
+            substrate_interface=si,
+            runtime_api="NeuronInfoRuntimeApi",
+            method="get_neurons_lite",
+            params=[netuid],
+            block=block,
+        )
+        assert hex_bytes_result is not None, "Failed to get neurons"
+        if hex_bytes_result.startswith("0x"):
+            bytes_result = bytes.fromhex(hex_bytes_result[2:])
+        else:
+            bytes_result = bytes.fromhex(hex_bytes_result)
 
-    nodes = _get_nodes_from_vec8(bytes_result)
+        nodes = _get_nodes_from_vec8(bytes_result)
     return nodes

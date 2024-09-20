@@ -27,7 +27,7 @@ def _query_subtensor(
 ) -> ScaleType:
     return substrate.query(
         module="SubtensorModule",
-        storage_function=name, 
+        storage_function=name,
         params=params,  # type: ignore
         block_hash=(None if block is None else substrate.get_block_hash(block)),  # type: ignore
     )
@@ -69,7 +69,11 @@ def _min_interval_to_set_weights(substrate_interface: SubstrateInterface, netuid
 
 
 def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[float]) -> tuple[list[int], list[int]]:
-    if len(node_ids) != len(node_weights) or any(uid < 0 for uid in node_ids) or any(weight < 0 for weight in node_weights):
+    if (
+        len(node_ids) != len(node_weights)
+        or any(uid < 0 for uid in node_ids)
+        or any(weight < 0 for weight in node_weights)
+    ):
         raise ValueError("Invalid input: length mismatch or negative values")
     if not any(node_weights):
         return [], []
@@ -122,19 +126,22 @@ def _send_extrinsic(
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
 ) -> tuple[bool, str | None]:
-    response = substrate_interface.submit_extrinsic(
-        extrinsic_to_send,
-        wait_for_inclusion=wait_for_inclusion,
-        wait_for_finalization=wait_for_finalization,
-    )
-    if not wait_for_finalization and not wait_for_inclusion:
-        return True, "Not waiting for finalization or inclusion."
-    response.process_events()
+    
+    ## Context manager here so if we need to reconnect, the retry loop will catch it
+    with substrate_interface as si:
+        response = si.submit_extrinsic(
+            extrinsic_to_send,
+            wait_for_inclusion=wait_for_inclusion,
+            wait_for_finalization=wait_for_finalization,
+        )
+        if not wait_for_finalization and not wait_for_inclusion:
+            return True, "Not waiting for finalization or inclusion."
+        response.process_events()
 
-    if response.is_success:
-        return True, "Successfully set weights."
+        if response.is_success:
+            return True, "Successfully set weights."
 
-    return False, _format_error_message(response.error_message)
+        return False, _format_error_message(response.error_message)
 
 
 def can_set_weights(substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
@@ -158,6 +165,11 @@ def set_node_weights(
     max_attempts: int = 1,
 ) -> bool:
     node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
+
+    # Closing first to prevent very commmon SSL errors - SI will automatically reconnect
+    substrate_interface.close()
+
+    
     rpc_call = substrate_interface.compose_call(
         call_module="SubtensorModule",
         call_function="set_weights",
@@ -168,13 +180,14 @@ def set_node_weights(
             "version_key": version_key,
         },
     )
-
     extrinsic_to_send = substrate_interface.create_signed_extrinsic(call=rpc_call, keypair=keypair, era={"period": 5})
 
     weights_can_be_set = False
     for attempt in range(1, max_attempts + 1):
         if not can_set_weights(substrate_interface, netuid, validator_node_id):
-            logger.info(logger.info(f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs..."))
+            logger.info(
+                logger.info(f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs...")
+            )
             time.sleep(30)
             continue
         else:
@@ -208,4 +221,5 @@ def set_node_weights(
     else:
         logger.error(f"❌ Failed to set weights: {error_message}")
 
+    substrate_interface.close()
     return success
