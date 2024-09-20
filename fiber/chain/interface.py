@@ -1,7 +1,7 @@
 from substrateinterface import SubstrateInterface
 
 from fiber import constants as fcst
-from fiber.chain_interactions import type_registries
+from fiber.chain import type_registries
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
