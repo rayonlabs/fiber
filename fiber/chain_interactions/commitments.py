@@ -6,9 +6,7 @@ from scalecodec import ScaleType
 from substrateinterface import SubstrateInterface, Keypair
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from fiber.chain_interactions.chain_utils import format_error_message, load_hotkey_keypair
-from fiber.chain_interactions.interface import get_substrate_interface
-from fiber.constants import FINNEY_TEST_NETWORK
+from fiber.chain_interactions.chain_utils import format_error_message
 
 
 class DataFieldType(Enum):
@@ -224,10 +222,3 @@ def get_raw_commitment(
         block=commitment.block,
         deposit=commitment.deposit,
     )
-
-
-if __name__ == '__main__':
-    keypair = load_hotkey_keypair("wombo-test-wallet", "1")
-    subtrate = get_substrate_interface(FINNEY_TEST_NETWORK)
-
-    print(get_raw_commitment(subtrate, 159, keypair.ss58_address))
