@@ -5,11 +5,13 @@ PLEASE IMPLEMENT YOUR OWN :)
 """
 
 from functools import partial
+
 from fastapi import Depends
+from fastapi.routing import APIRouter
 from pydantic import BaseModel
+
 from fiber.miner.dependencies import blacklist_low_stake
 from fiber.miner.security.encryption import decrypt_general_payload
-from fastapi.routing import APIRouter
 
 
 class ExampleSubnetRequest(BaseModel):

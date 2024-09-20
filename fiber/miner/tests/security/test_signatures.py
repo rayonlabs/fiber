@@ -1,6 +1,8 @@
 import unittest
-from substrateinterface import Keypair
 from unittest.mock import patch
+
+from substrateinterface import Keypair
+
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -23,7 +25,8 @@ def verify_signature(message: str, signature: str, ss58_address: str) -> bool:
 
 class TestSignatureVerification(unittest.TestCase):
     def setUp(self):
-        self.mnemonic = "clip organ olive upper oak void inject side suit toilet stick narrow"  # Don't be dumb and use this for anything...
+        self.mnemonic = "clip organ olive upper oak void inject side suit toilet stick narrow"  
+        # Don't be dumb and use this for anything...
         self.keypair = Keypair.create_from_mnemonic(self.mnemonic)
         self.message = "Test message"
         self.ss58_address = self.keypair.ss58_address

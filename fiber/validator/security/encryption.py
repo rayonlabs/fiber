@@ -1,6 +1,5 @@
-from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 
 def public_key_encrypt(public_key: rsa.RSAPublicKey, data: bytes) -> bytes:

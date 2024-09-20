@@ -1,10 +1,9 @@
 import logging
-
 import os
 import sys
 from functools import lru_cache
-from colorama import Fore, Back, Style, init
 
+from colorama import Back, Fore, Style, init
 
 init(autoreset=True)
 

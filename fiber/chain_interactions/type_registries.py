@@ -1,6 +1,5 @@
 from typing import Any
 
-
 TYPE_REGISTERY = {
     "types": {
         "Balance": "u64",  # Need to override default u128

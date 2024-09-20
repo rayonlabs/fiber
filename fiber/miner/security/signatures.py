@@ -1,7 +1,8 @@
 import json
-from substrateinterface import Keypair
-from fiber.logging_utils import get_logger
 
+from substrateinterface import Keypair
+
+from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
 

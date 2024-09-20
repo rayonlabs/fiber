@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
-from pydantic import BaseModel
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+
 from cryptography.fernet import Fernet
+from pydantic import BaseModel
 
 
 @dataclass

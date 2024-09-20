@@ -1,6 +1,7 @@
 from typing import TypedDict
-from pydantic import BaseModel
+
 from cryptography.fernet import Fernet
+from pydantic import BaseModel
 
 
 class Node(BaseModel):

@@ -1,10 +1,10 @@
+from fastapi import Depends, HTTPException, Request
 from pydantic import BaseModel
+
+from fiber.logging_utils import get_logger
 from fiber.miner.core import configuration
 from fiber.miner.core.models.config import Config
-from fastapi import Depends, Request, HTTPException
-from fiber.logging_utils import get_logger
 from fiber.miner.security import signatures
-
 
 logger = get_logger(__name__)
 

@@ -1,16 +1,18 @@
-from cryptography.hazmat.primitives.asymmetric import rsa
+import base64
+import os
+import time
+
 import httpx
 from cryptography.hazmat.backends import default_backend
-from fiber.miner.core.models import encryption
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-import time
-import os
-from fiber.miner.security import signatures
-import base64
+from cryptography.hazmat.primitives.asymmetric import rsa
 from substrateinterface import Keypair
+
+from fiber import constants as bcst
+from fiber.miner.core.models import encryption
+from fiber.miner.security import signatures
 from fiber.validator.generate_nonce import generate_nonce
 from fiber.validator.security.encryption import public_key_encrypt
-from fiber import constants as bcst
 
 
 async def perform_handshake(

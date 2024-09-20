@@ -1,15 +1,14 @@
 import time
-from tenacity import retry
-from substrateinterface import Keypair, SubstrateInterface
+from functools import wraps
+from typing import Any, Callable
+
 from scalecodec import ScaleType
 from scalecodec.types import GenericExtrinsic
+from substrateinterface import Keypair, SubstrateInterface
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 from fiber import constants as fcst
 from fiber.logging_utils import get_logger
-
-from tenacity import stop_after_attempt, wait_exponential
-from functools import wraps
-from typing import Callable, Any
-
 
 logger = get_logger(__name__)
 
@@ -169,7 +168,7 @@ def set_node_weights(
     # Closing first to prevent very commmon SSL errors - SI will automatically reconnect
     substrate_interface.close()
 
-    
+
     rpc_call = substrate_interface.compose_call(
         call_module="SubtensorModule",
         call_function="set_weights",

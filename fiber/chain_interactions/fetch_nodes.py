@@ -1,16 +1,14 @@
 from typing import Any
-from substrateinterface import SubstrateInterface
-import scalecodec
-
-from tenacity import retry, stop_after_attempt, wait_exponential
-
-from fiber.chain_interactions import models
-from fiber.chain_interactions import chain_utils as chain_utils
-from fiber import constants as fcst
 
 import netaddr
+import scalecodec
 from scalecodec.utils.ss58 import ss58_encode
-from fiber.chain_interactions import type_registries
+from substrateinterface import SubstrateInterface
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+from fiber import constants as fcst
+from fiber.chain_interactions import chain_utils as chain_utils
+from fiber.chain_interactions import models, type_registries
 
 
 def _normalise_u16_float(x: int) -> float:

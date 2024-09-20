@@ -1,16 +1,16 @@
-import unittest
-from unittest.mock import Mock, patch
 import base64
 import time
-from fastapi.testclient import TestClient
-from fastapi import FastAPI
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+import unittest
+from unittest.mock import Mock, patch
 
-from fiber.miner.endpoints.handshake import factory_router
-from fiber.miner.core.models.encryption import SymmetricKeyExchange
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 from fiber.miner.core.configuration import Config
+from fiber.miner.core.models.encryption import SymmetricKeyExchange
+from fiber.miner.endpoints.handshake import factory_router
 from fiber.miner.security.nonce_management import NonceManager
 
 

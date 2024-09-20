@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+
 from fiber.miner.security.nonce_management import NonceManager
 from fiber.validator import generate_nonce
 

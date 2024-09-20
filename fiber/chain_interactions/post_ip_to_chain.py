@@ -1,6 +1,7 @@
-from substrateinterface import SubstrateInterface, Keypair
-from tenacity import retry, stop_after_attempt, wait_exponential
 import netaddr
+from substrateinterface import Keypair, SubstrateInterface
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)

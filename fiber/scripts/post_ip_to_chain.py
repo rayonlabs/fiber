@@ -1,9 +1,8 @@
-from fiber.logging_utils import get_logger
-from fiber import constants as fcst
-from fiber.chain_interactions import interface
-from fiber.chain_interactions import chain_utils
-from fiber.chain_interactions import post_ip_to_chain
 import argparse
+
+from fiber import constants as fcst
+from fiber.chain_interactions import chain_utils, interface, post_ip_to_chain
+from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
 

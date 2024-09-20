@@ -1,21 +1,19 @@
+import base64
+import os
 from functools import lru_cache
+from typing import TypeVar
 
 import httpx
-
-from fiber.chain_interactions.metagraph import Metagraph
-from fiber.miner.security import nonce_management
-from dotenv import load_dotenv
-import os
-from fiber.miner.core.models.config import Config
-import base64
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from typing import TypeVar
-from fiber.miner.security import key_management
-from fiber.miner.core import miner_constants as mcst
-from fiber.chain_interactions import chain_utils
-from fiber.chain_interactions import interface
+from dotenv import load_dotenv
 from pydantic import BaseModel
+
+from fiber.chain_interactions import chain_utils, interface
+from fiber.chain_interactions.metagraph import Metagraph
+from fiber.miner.core import miner_constants as mcst
+from fiber.miner.core.models.config import Config
+from fiber.miner.security import key_management, nonce_management
 
 T = TypeVar("T", bound=BaseModel)
 

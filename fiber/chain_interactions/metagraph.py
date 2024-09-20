@@ -5,13 +5,14 @@ it in hotkey: node
 Can then be used to blacklist and verify
 """
 
-import threading
-from fiber.chain_interactions import fetch_nodes
 import json
-from fiber.chain_interactions import models
+import threading
+
 from substrateinterface import SubstrateInterface
-from fiber.logging_utils import get_logger
+
 from fiber import constants as fcst
+from fiber.chain_interactions import fetch_nodes, models
+from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
 

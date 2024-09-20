@@ -1,9 +1,11 @@
-from contextlib import asynccontextmanager
 import threading
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from fiber.miner.endpoints.handshake import factory_router as handshake_factory_router
-from fiber.miner.core import configuration
+
 from fiber.logging_utils import get_logger
+from fiber.miner.core import configuration
+from fiber.miner.endpoints.handshake import factory_router as handshake_factory_router
 
 logger = get_logger(__name__)
 

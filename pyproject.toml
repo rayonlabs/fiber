@@ -52,9 +52,12 @@ reportMissingModuleSource = false
 [tool.ruff]
 line-length = 130
 
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E402"]
+
+
 [lint.isort]
 lines-after-imports = 2
 force-single-line   = true
 
-[lint]
-ignore = ["E402"]

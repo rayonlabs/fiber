@@ -1,11 +1,12 @@
 import time
+
+from cryptography.fernet import Fernet
 from fastapi import APIRouter, Depends, HTTPException
 
 from fiber.miner.core.configuration import Config
-from fiber.miner.dependencies import get_config, blacklist_low_stake, verify_signature
 from fiber.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
+from fiber.miner.dependencies import blacklist_low_stake, get_config, verify_signature
 from fiber.miner.security.encryption import get_symmetric_key_b64_from_payload
-from cryptography.fernet import Fernet
 
 
 async def get_public_key(config: Config = Depends(get_config)):
