@@ -28,12 +28,12 @@ def _deserialize_commitment_field(field: dict[str, bytes | str]) -> CommitmentDa
         return None
 
     if data_type.startswith(CommitmentDataFieldType.RAW.value):
-        expected_length = int(data_type[len(CommitmentDataFieldType.RAW.value):])
+        expected_field_data_length = int(data_type[len(CommitmentDataFieldType.RAW.value):])
         data_type = CommitmentDataFieldType.RAW.value
         data = bytes.fromhex(data[2:])
 
-        if len(data) != expected_length:
-            raise ValueError(f"Got commitment raw field expecting {expected_length} data but got {len(data)} data")
+        if len(data) != expected_field_data_length:
+            raise ValueError(f"Got commitment raw field expecting {expected_field_data_length} data but got {len(data)} data")
 
     return CommitmentDataFieldType(data_type), data
 
