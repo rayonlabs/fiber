@@ -119,7 +119,7 @@ def log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     reraise=True,
 )
 @log_and_reraise
-def _send_extrinsic(
+def send_extrinsic(
     substrate_interface: SubstrateInterface,
     extrinsic_to_send: GenericExtrinsic,
     wait_for_inclusion: bool = False,
@@ -199,7 +199,7 @@ def set_node_weights(
 
     logger.info("Attempting to set weights...")
 
-    success, error_message = _send_extrinsic(
+    success, error_message = send_extrinsic(
         substrate_interface=substrate_interface,
         extrinsic_to_send=extrinsic_to_send,
         wait_for_inclusion=wait_for_inclusion,
