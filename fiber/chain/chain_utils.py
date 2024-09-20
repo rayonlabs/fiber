@@ -6,8 +6,8 @@ from scalecodec.base import RuntimeConfiguration
 from scalecodec.type_registry import load_type_registry_preset
 from substrateinterface import Keypair
 
-from fiber.chain_interactions import chain_utils as chain_utils
-from fiber.chain_interactions import type_registries
+from fiber.chain import chain_utils as chain_utils
+from fiber.chain import type_registries
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)

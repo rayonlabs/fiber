@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 
 from fiber import constants as bcst
 from fiber import constants as cst
-from fiber.chain_interactions.models import Node
+from fiber.chain.models import Node
 from fiber.logging_utils import get_logger
 from fiber.validator.generate_nonce import generate_nonce
 

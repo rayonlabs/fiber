@@ -15,11 +15,11 @@ class NonceManager:
         self._nonces[nonce] = time.time() + self.TTL
 
     def nonce_is_valid(self, nonce: str) -> bool:
+        logger.debug(f"Checking if nonce is valid: {nonce}")
         # Check for collision
         if nonce in self._nonces:
             logger.debug(f"Invalid nonce because it's a collision: {nonce}")
             return False
-
 
         # If nonce isn't the right format, don't add it to self._nonces to prevent abuse
         # Check for recency
@@ -34,7 +34,6 @@ class NonceManager:
         except (ValueError, IndexError):
             logger.debug(f"Invalid nonce because it's not in the right format. Nonce: {nonce}")
             return False
-
 
         # Nonces, can only be used once.
         self.add_nonce(nonce)

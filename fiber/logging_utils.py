@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-from functools import lru_cache
 
 from colorama import Back, Fore, Style, init
 
@@ -34,11 +33,10 @@ class ColoredFormatter(logging.Formatter):
         return message
 
 
-@lru_cache(maxsize=None)
+# NOTE: Pm2 hates this (colours aren't great), why?
 def get_logger(name: str):
     logger = logging.getLogger(name.split(".")[-1])
     mode: str = os.getenv("ENV", "prod")
-
     logger.setLevel(logging.DEBUG if mode != "prod" else logging.INFO)
     logger.handlers.clear()
 

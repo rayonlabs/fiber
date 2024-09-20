@@ -11,7 +11,7 @@ import threading
 from substrateinterface import SubstrateInterface
 
 from fiber import constants as fcst
-from fiber.chain_interactions import fetch_nodes, models
+from fiber.chain import fetch_nodes, models
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -38,6 +38,7 @@ class Metagraph:
 
         # This is mainly to speed up development
         if load_old_nodes:
+            logger.debug("Loading nodes from file...")
             self.load_nodes()
             if len(self.nodes) > 0:
                 self.is_in_sync = True

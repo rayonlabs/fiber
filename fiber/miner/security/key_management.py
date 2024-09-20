@@ -37,7 +37,9 @@ class EncryptionKeysHandler:
         self.symmetric_keys_fernets[hotkey_ss58_address][uuid] = symmetric_key_info
 
     def get_symmetric_key(self, hotkey_ss58_address: str, uuid: str) -> SymmetricKeyInfo:
-        return self.symmetric_keys_fernets.get(hotkey_ss58_address, {})[uuid]
+        if hotkey_ss58_address not in self.symmetric_keys_fernets or uuid not in self.symmetric_keys_fernets[hotkey_ss58_address]:
+            return None
+        return self.symmetric_keys_fernets[hotkey_ss58_address][uuid]
 
     def save_symmetric_keys(self) -> None:
         filename = f"{self.hotkey}_{mcst.SYMMETRIC_KEYS_FILENAME}"

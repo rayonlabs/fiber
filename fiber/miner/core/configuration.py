@@ -9,8 +9,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from fiber.chain_interactions import chain_utils, interface
-from fiber.chain_interactions.metagraph import Metagraph
+from fiber.chain import chain_utils, interface
+from fiber.chain.metagraph import Metagraph
 from fiber.miner.core import miner_constants as mcst
 from fiber.miner.core.models.config import Config
 from fiber.miner.security import key_management, nonce_management
