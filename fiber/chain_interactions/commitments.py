@@ -5,6 +5,9 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from fiber.chain_interactions.chain_utils import format_error_message
 from fiber.chain_interactions.models import CommitmentDataField, CommitmentDataFieldType, CommitmentQuery, RawCommitmentQuery
 from fiber.constants import EMPTY_COMMITMENT_FIELD_TYPE
+from fiber.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def _serialize_commitment_field(field: CommitmentDataField) -> dict[str, bytes]:
@@ -65,13 +68,13 @@ def _query_commitment(
     reraise=True,
 )
 def set_commitment(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     keypair: Keypair,
     netuid: int,
     fields: list[CommitmentDataField],
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
-) -> tuple[bool, str | None]:
+) -> bool:
     """
     Commit custom fields to the chain
     Arguments:
@@ -83,7 +86,9 @@ def set_commitment(
         for field in fields
     ]]
 
-    call = substrate_interface.compose_call(
+    substrate.close()
+
+    call = substrate.compose_call(
         call_module="Commitments",
         call_function="set_commitment",
         call_params={
@@ -94,23 +99,35 @@ def set_commitment(
         },
     )
 
-    extrinsic_to_send = substrate_interface.create_signed_extrinsic(call=call, keypair=keypair)
+    extrinsic_to_send = substrate.create_signed_extrinsic(call=call, keypair=keypair)
 
-    response = substrate_interface.submit_extrinsic(
+    response = substrate.submit_extrinsic(
         extrinsic_to_send,
         wait_for_inclusion=wait_for_inclusion,
         wait_for_finalization=wait_for_finalization,
     )
 
     if not wait_for_finalization and not wait_for_inclusion:
-        return True, "Not waiting for finalization or inclusion."
+        logger.info("Not waiting for finalization or inclusion.")
+        return True
 
     response.process_events()
 
-    if response.is_success:
-        return True, "Successfully submitted commitment."
+    substrate.close()
 
-    return False, format_error_message(response.error_message)
+    if response.is_success:
+        if wait_for_finalization:
+            logger.info("✅ Successfully set weights and finalized")
+        elif wait_for_inclusion:
+            logger.info("✅ Successfully set weights and included")
+        else:
+            logger.info("✅ Successfully set weights")
+
+        return True
+    else:
+        logger.error(f"❌ Failed to set weights: {format_error_message(response.error_message)}")
+
+        return False
 
 
 def query_commitment(
