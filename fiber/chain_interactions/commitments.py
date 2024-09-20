@@ -1,7 +1,3 @@
-from enum import Enum
-from typing import TypeAlias
-
-from pydantic import BaseModel
 from scalecodec import ScaleType
 from substrateinterface import SubstrateInterface, Keypair
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -11,7 +7,7 @@ from fiber.chain_interactions.models import CommitmentDataField, CommitmentDataF
 from fiber.constants import EMPTY_COMMITMENT_FIELD_TYPE
 
 
-def _serialize_field(field: CommitmentDataField) -> dict[str, bytes]:
+def _serialize_commitment_field(field: CommitmentDataField) -> dict[str, bytes]:
     if not field:
         return {EMPTY_COMMITMENT_FIELD_TYPE: b''}
 
@@ -25,7 +21,7 @@ def _serialize_field(field: CommitmentDataField) -> dict[str, bytes]:
     return {serialized_data_type: data}
 
 
-def _deserialize_field(field: dict[str, bytes | str]) -> CommitmentDataField:
+def _deserialize_commitment_field(field: dict[str, bytes | str]) -> CommitmentDataField:
     data_type, data = field.items().__iter__().__next__()
 
     if data_type == EMPTY_COMMITMENT_FIELD_TYPE:
@@ -81,7 +77,7 @@ def set_commitment(
     """
 
     mapped_fields = [[
-        _serialize_field(field)
+        _serialize_commitment_field(field)
         for field in fields
     ]]
 
@@ -137,7 +133,7 @@ def query_commitment(
         return None
 
     fields: list[dict[str, bytes]] = value["info"]["fields"]
-    mapped_fields = [_deserialize_field(field) for field in fields]
+    mapped_fields = [_deserialize_commitment_field(field) for field in fields]
 
     return CommitmentQuery(
         fields=mapped_fields,
