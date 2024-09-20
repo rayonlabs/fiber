@@ -37,7 +37,7 @@ include = [
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/fiber",
+    "fiber",
 ]
 
 [tool.pyright]
