@@ -7,8 +7,8 @@ from substrateinterface import SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
-from fiber.chain_interactions import chain_utils as chain_utils
-from fiber.chain_interactions import models, type_registries
+from fiber.chain import chain_utils as chain_utils
+from fiber.chain import models, type_registries
 
 
 def _normalise_u16_float(x: int) -> float:

@@ -11,7 +11,7 @@ import threading
 from substrateinterface import SubstrateInterface
 
 from fiber import constants as fcst
-from fiber.chain_interactions import fetch_nodes, models
+from fiber.chain import fetch_nodes, models
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
