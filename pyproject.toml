@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fiber"
+version = "0.0.1"
+description = "The ultra lightweight network for miner-validator communication"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "namoray", email = "nuevaamor@proton.me" },
+]
+dependencies = [
+    "substrate-interface==1.7.10",
+    "tenacity==9.0.0",
+    "netaddr==1.3.0",
+    "colorama==0.4.6",
+    "fastapi==0.112.0",
+    "uvicorn==0.30.5",
+    "cryptography==43.0.0",
+    "python-dotenv==1.0.1",
+    "httpx==0.27.0"
+]
+
+[project.scripts]
+fiber-post-ip = "fiber.scripts.post_ip_to_chain:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fiber"]
+
+[tool.hatch.build]
+include = [
+    "fiber/**/*.py",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/fiber",
+]
+
+[tool.pyright]
+include = ["fiber"]
+exclude = ["**/node_modules", "**/__pycache__", "**/test_*.py"]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.10"
+pythonPlatform = "Linux"
+reportMissingModuleSource = false
+
+[tool.ruff]
+line-length = 130
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E402"]
+
+
+[lint.isort]
+lines-after-imports = 2
+force-single-line   = true
+
