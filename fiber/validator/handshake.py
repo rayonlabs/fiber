@@ -8,10 +8,11 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.asymmetric import rsa
 from substrateinterface import Keypair
 
-from fiber import constants as bcst
+from fiber import constants as cst
+from fiber import utils
+from fiber.chain import signatures
 from fiber.logging_utils import get_logger
 from fiber.miner.core.models import encryption
-from fiber.miner.security import signatures
 from fiber.validator.generate_nonce import generate_nonce
 from fiber.validator.security.encryption import public_key_encrypt
 
@@ -43,8 +44,8 @@ async def perform_handshake(
 
 
 async def get_public_encryption_key(httpx_client: httpx.AsyncClient, server_address: str, timeout: int = 3) -> rsa.RSAPublicKey:
-    response = await httpx_client.get(url=f"{server_address}/{bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}", timeout=timeout)
-    logger.debug(f"Response from {server_address} for {bcst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}: {response.text}")
+    response = await httpx_client.get(url=f"{server_address}/{cst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}", timeout=timeout)
+    logger.debug(f"Response from {server_address} for {cst.PUBLIC_ENCRYPTION_KEY_ENDPOINT}: {response.text}")
     response.raise_for_status()
     data = encryption.PublicKeyResponse(**response.json())
     public_key_pem = data.public_key.encode()
@@ -71,16 +72,16 @@ async def send_symmetric_key_to_server(
         "nonce": generate_nonce(),
     }
 
-    signature = signatures.sign_message(keypair, signatures.construct_message_from_payload(payload))
+    signature = signatures.sign_message(keypair, utils.construct_message_from_payload(payload))
 
     headers = {"hotkey": keypair.ss58_address, "signature": signature}
 
     response = await httpx_client.post(
-        f"{server_address}/{bcst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}",
+        f"{server_address}/{cst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}",
         json=payload,
         timeout=timeout,
         headers=headers,
     )
-    logger.debug(f"Response from {server_address} for {bcst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}: {response.text}")
+    logger.debug(f"Response from {server_address} for {cst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}: {response.text}")
     response.raise_for_status()
     return response.status_code == 200

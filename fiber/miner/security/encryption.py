@@ -58,10 +58,10 @@ def decrypt_general_payload(
     model: Type[T],
     encrypted_payload: bytes = Depends(get_body),
     symmetric_key_uuid: str = Header(...),
-    hotkey_ss58_address: str = Header(...),
+    hotkey: str = Header(...),
     config: Config = Depends(get_config),
 ) -> T:
-    symmetric_key_info = config.encryption_keys_handler.get_symmetric_key(hotkey_ss58_address, symmetric_key_uuid)
+    symmetric_key_info = config.encryption_keys_handler.get_symmetric_key(hotkey, symmetric_key_uuid)
     if not symmetric_key_info:
         raise HTTPException(status_code=400, detail="No symmetric key found for that hotkey and uuid")
 

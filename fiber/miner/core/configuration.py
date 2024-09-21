@@ -47,14 +47,14 @@ def factory_config() -> Config:
     assert netuid is not None, "Must set NETUID env var please!"
 
     if refresh_nodes:
-        substrate_interface = interface.get_substrate_interface(subtensor_network, subtensor_address)
+        substrate = interface.get_substrate(subtensor_network, subtensor_address)
         metagraph = Metagraph(
-            substrate_interface=substrate_interface,
+            substrate=substrate,
             netuid=netuid,
             load_old_nodes=load_old_nodes,
         )
     else:
-        metagraph = Metagraph(substrate_interface=None, netuid=netuid, load_old_nodes=load_old_nodes)
+        metagraph = Metagraph(substrate=None, netuid=netuid, load_old_nodes=load_old_nodes)
 
     keypair = chain_utils.load_hotkey_keypair(wallet_name, hotkey_name)
 

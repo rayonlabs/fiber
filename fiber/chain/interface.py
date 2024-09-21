@@ -23,14 +23,14 @@ def _get_chain_endpoint(subtensor_network: str | None, subtensor_address: str | 
     return subtensor_address
 
 
-def get_substrate_interface(
+def get_substrate(
     subtensor_network: str | None = fcst.FINNEY_NETWORK,
     subtensor_address: str | None = None,
 ) -> SubstrateInterface:
     subtensor_address = _get_chain_endpoint(subtensor_network, subtensor_address)
 
     type_registry = type_registries.get_type_registry()
-    substrate_interface = SubstrateInterface(
+    substrate = SubstrateInterface(
         ss58_format=42,
         use_remote_preset=True,
         url=subtensor_address,
@@ -38,4 +38,4 @@ def get_substrate_interface(
     )
     logger.info(f"Connected to {subtensor_address}")
 
-    return substrate_interface
+    return substrate
