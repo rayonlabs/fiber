@@ -6,7 +6,7 @@ from scalecodec.base import RuntimeConfiguration
 from scalecodec.type_registry import load_type_registry_preset
 from substrateinterface import Keypair
 
-from fiber.chain import chain_utils as chain_utils
+from fiber.chain import chain_utils as utils
 from fiber.chain import type_registries
 from fiber.logging_utils import get_logger
 
@@ -47,7 +47,7 @@ def create_scale_object_from_scale_encoding(
 
         as_scale_bytes = ScaleBytes(as_bytes)
 
-    scale_object = chain_utils.create_scale_object_from_scale_bytes(type_string, as_scale_bytes)
+    scale_object = utils.create_scale_object_from_scale_bytes(type_string, as_scale_bytes)
 
     return scale_object.decode()
 
@@ -84,3 +84,9 @@ def load_hotkey_keypair(wallet_name: str, hotkey_name: str) -> Keypair:
         return keypair
     except Exception as e:
         raise ValueError(f"Failed to load keypair: {str(e)}")
+
+
+def sign_message(keypair: Keypair, message: str | None) -> str | None:
+    if message is None:
+        return None
+    return f"0x{keypair.sign(message).hex()}"

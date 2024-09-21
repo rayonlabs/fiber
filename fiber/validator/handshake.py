@@ -8,10 +8,10 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.asymmetric import rsa
 from substrateinterface import Keypair
 
-from fiber import constants as bcst
+from fiber import constants as bcst, utils
 from fiber.logging_utils import get_logger
 from fiber.miner.core.models import encryption
-from fiber.miner.security import signatures
+from fiber.chain import signatures
 from fiber.validator.generate_nonce import generate_nonce
 from fiber.validator.security.encryption import public_key_encrypt
 
@@ -71,7 +71,7 @@ async def send_symmetric_key_to_server(
         "nonce": generate_nonce(),
     }
 
-    signature = signatures.sign_message(keypair, signatures.construct_message_from_payload(payload))
+    signature = signatures.sign_message(keypair, utils.construct_message_from_payload(payload))
 
     headers = {"hotkey": keypair.ss58_address, "signature": signature}
 

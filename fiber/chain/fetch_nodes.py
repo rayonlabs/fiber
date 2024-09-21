@@ -7,7 +7,7 @@ from substrateinterface import SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
-from fiber.chain import chain_utils as chain_utils
+from fiber.chain import chain_utils as utils
 from fiber.chain import models, type_registries
 from fiber.logging_utils import get_logger
 
@@ -41,7 +41,7 @@ def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
 
 
 def _get_nodes_from_vec8(vec_u8: bytes) -> list[models.Node]:
-    decoded_neuron_infos = chain_utils.create_scale_object_from_scale_encoding(vec_u8, fcst.NEURON_INFO_LITE, is_vec=True)
+    decoded_neuron_infos = utils.create_scale_object_from_scale_encoding(vec_u8, fcst.NEURON_INFO_LITE, is_vec=True)
     if decoded_neuron_infos is None:
         return []
 
@@ -54,7 +54,7 @@ def _get_nodes_from_vec8(vec_u8: bytes) -> list[models.Node]:
 
 
 def _encode_params(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     call_definition: list[models.ParamWithTypes],
     params: list[Any] | dict[str, Any],
 ) -> str:
@@ -62,7 +62,7 @@ def _encode_params(
     param_data = scalecodec.ScaleBytes(b"")
 
     for i, param in enumerate(call_definition["params"]):  # type: ignore
-        scale_obj = substrate_interface.create_scale_object(param["type"])
+        scale_obj = substrate.create_scale_object(param["type"])
         if isinstance(params, list):
             param_data += scale_obj.encode(params[i])
             assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
@@ -77,7 +77,7 @@ def _encode_params(
 
 
 def _execute_rpc_request(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     method: str,
     data: str,
     block: int | None = None,
@@ -88,10 +88,10 @@ def _execute_rpc_request(
         reraise=True,
     )
     def make_substrate_call() -> dict[str, Any]:
-        block_hash = None if block is None else substrate_interface.get_block_hash(block)
+        block_hash = None if block is None else substrate.get_block_hash(block)
         params = [method, data, block_hash] if block_hash else [method, data]
 
-        return substrate_interface.rpc_request(
+        return substrate.rpc_request(
             method="state_call",
             params=params,
         )
@@ -100,7 +100,7 @@ def _execute_rpc_request(
 
 
 def _query_runtime_api(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     runtime_api: str,
     method: str,
     params: list[int] | dict[str, int] | None,
@@ -111,13 +111,13 @@ def _query_runtime_api(
     call_definition = type_registry["runtime_api"][runtime_api]["methods"][method]
 
     json_result = _execute_rpc_request(
-        substrate_interface=substrate_interface,
+        substrate=substrate,
         method=f"{runtime_api}_{method}",
         data=(
             "0x"
             if params is None
             else _encode_params(
-                substrate_interface=substrate_interface,
+                substrate=substrate,
                 call_definition=call_definition,
                 params=params,
             )
@@ -132,7 +132,7 @@ def _query_runtime_api(
 
     as_scale_bytes = scalecodec.ScaleBytes(json_result["result"])
 
-    scale_object = chain_utils.create_scale_object_from_scale_bytes(return_type, as_scale_bytes)
+    scale_object = utils.create_scale_object_from_scale_bytes(return_type, as_scale_bytes)
 
     if scale_object.data.to_hex() == "0x0400":
         return None
@@ -141,11 +141,11 @@ def _query_runtime_api(
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
-def _get_nodes_for_uid(substrate_interface: SubstrateInterface, netuid: int, block: int | None = None):
-    logger.debug(f"Substrate interface is connected: {substrate_interface.websocket.connected}")
-    with substrate_interface as si:
+def _get_nodes_for_uid(substrate: SubstrateInterface, netuid: int, block: int | None = None):
+    logger.debug(f"Substrate interface is connected: {substrate.websocket.connected}")
+    with substrate as si:
         hex_bytes_result = _query_runtime_api(
-            substrate_interface=si,
+            substrate=si,
             runtime_api="NeuronInfoRuntimeApi",
             method="get_neurons_lite",
             params=[netuid],
@@ -160,7 +160,7 @@ def _get_nodes_for_uid(substrate_interface: SubstrateInterface, netuid: int, blo
     return _get_nodes_from_vec8(bytes_result)
 
 
-def get_nodes_for_netuid(substrate_interface: SubstrateInterface, netuid: int, block: int | None = None) -> list[models.Node]:
+def get_nodes_for_netuid(substrate: SubstrateInterface, netuid: int, block: int | None = None) -> list[models.Node]:
     # Context manager to close substrate interface connection after this
 
-    return _get_nodes_for_uid(substrate_interface, netuid, block)
+    return _get_nodes_for_uid(substrate, netuid, block)

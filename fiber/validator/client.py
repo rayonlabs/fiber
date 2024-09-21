@@ -4,8 +4,9 @@ from typing import Any, AsyncGenerator
 import httpx
 from cryptography.fernet import Fernet
 
-from fiber import constants as bcst
+from fiber import Keypair
 from fiber import constants as cst
+from fiber.chain import signatures
 from fiber.chain.models import Node
 from fiber.logging_utils import get_logger
 from fiber.validator.generate_nonce import generate_nonce
@@ -16,8 +17,20 @@ logger = get_logger(__name__)
 def _get_headers(symmetric_key_uuid: str, validator_ss58_address: str) -> dict[str, str]:
     return {
         "Content-Type": "application/octet-stream",  # NOTE: Good?
-        bcst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
-        bcst.SS58_ADDRESS: validator_ss58_address,
+        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
+        cst.HOTKEY: validator_ss58_address,
+    }
+
+
+def _get_headers_with_nonce(symmetric_key_uuid: str, validator_ss58_address: str, keypair: Keypair) -> dict[str, str]:
+    nonce = generate_nonce()
+    signature = signatures.sign_message(keypair, nonce)
+    return {
+        "Content-Type": "application/octet-stream",  # NOTE: Good?
+        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
+        cst.HOTKEY: validator_ss58_address,
+        cst.NONCE: nonce,
+        cst.SIGNATURE: signature,
     }
 
 
@@ -61,18 +74,19 @@ async def make_non_streamed_post(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     validator_ss58_address: str,
+    keypair: Keypair,
     fernet: Fernet,
     symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> httpx.Response:
-    headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+    headers = _get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, keypair)
 
     payload[cst.NONCE] = generate_nonce()
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
     response = await httpx_client.post(
-        content=encrypted_payload,   # NOTE: can this be content?
+        content=encrypted_payload,  # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,
@@ -84,13 +98,14 @@ async def make_streamed_post(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     validator_ss58_address: str,
+    keypair: Keypair,
     fernet: Fernet,
     symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> AsyncGenerator[bytes, None]:
-    headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+    headers = _get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, keypair)
 
     payload[cst.NONCE] = generate_nonce()
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())

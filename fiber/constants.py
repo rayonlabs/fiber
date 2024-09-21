@@ -1,7 +1,7 @@
 EXCHANGE_SYMMETRIC_KEY_ENDPOINT = "exchange-symmetric-key"
 PUBLIC_ENCRYPTION_KEY_ENDPOINT = "public-encryption-key"
 SYMMETRIC_KEY_UUID = "symmetric-key-uuid"
-SS58_ADDRESS = "hotkey-ss58-address"
+HOTKEY = "hotkey"
 NEURON_INFO_LITE = "NeuronInfoLite"
 
 FINNEY_NETWORK = "finney"
@@ -16,6 +16,8 @@ SUBTENSOR_NETWORK_TO_SUBTENSOR_ADDRESS = {
 
 
 NONCE = "nonce"
+SIGNATURE = "signature"
+
 
 SAVE_NODES_FILEPATH = "nodes.json"
 

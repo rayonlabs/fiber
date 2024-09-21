@@ -18,7 +18,7 @@ def ip_version(str_val: str) -> int:
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
 def post_node_ip_to_chain(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     keypair: Keypair,
     netuid: int,
     external_ip: str,
@@ -42,7 +42,7 @@ def post_node_ip_to_chain(
 
     logger.info(f"Posting IP to chain. Params: {params}")
 
-    with substrate_interface as si:
+    with substrate as si:
         call = si.compose_call("SubtensorModule", "serve_axon", params)
         extrinsic = si.create_signed_extrinsic(call=call, keypair=keypair)
         response = si.submit_extrinsic(extrinsic, wait_for_inclusion, wait_for_finalization)

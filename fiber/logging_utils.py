@@ -36,7 +36,7 @@ class ColoredFormatter(logging.Formatter):
 # NOTE: Pm2 hates this (colours aren't great), why?
 def get_logger(name: str):
     logger = logging.getLogger(name.split(".")[-1])
-    mode: str = os.getenv("ENV", "prod")
+    mode: str = os.getenv("ENV", "prod").lower()
     logger.setLevel(logging.DEBUG if mode != "prod" else logging.INFO)
     logger.handlers.clear()
 
@@ -55,5 +55,5 @@ def get_logger(name: str):
     console_handler.setFormatter(colored_formatter)
     logger.addHandler(console_handler)
 
-    logger.debug(f"Mode is {mode}")
+    logger.info(f"Logging mode is {logging.getLevelName(logger.getEffectiveLevel())}")
     return logger
