@@ -1,7 +1,7 @@
 import argparse
 
 from fiber import constants as fcst
-from fiber.chain import interface, post_ip_to_chain, utils
+from fiber.chain import chain_utils, interface, post_ip_to_chain
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -44,8 +44,8 @@ def main():
 
 
     substrate = interface.get_substrate(subtensor_address=chain_endpoint, subtensor_network=network)
-    keypair = utils.load_hotkey_keypair(wallet_name=wallet_name, hotkey_name=wallet_hotkey)
-    coldkey_keypair_pub = utils.load_coldkeypub_keypair(wallet_name=wallet_name)
+    keypair = chain_utils.load_hotkey_keypair(wallet_name=wallet_name, hotkey_name=wallet_hotkey)
+    coldkey_keypair_pub = chain_utils.load_coldkeypub_keypair(wallet_name=wallet_name)
 
     success = post_ip_to_chain.post_node_ip_to_chain(
         substrate=substrate,

@@ -7,7 +7,7 @@ from substrateinterface import SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
-from fiber.chain import chain_utils as utils
+from fiber.chain import chain_utils as chain_utils
 from fiber.chain import models, type_registries
 from fiber.logging_utils import get_logger
 
@@ -41,7 +41,7 @@ def _get_node_from_neuron_info(neuron_info_decoded: dict) -> models.Node:
 
 
 def _get_nodes_from_vec8(vec_u8: bytes) -> list[models.Node]:
-    decoded_neuron_infos = utils.create_scale_object_from_scale_encoding(vec_u8, fcst.NEURON_INFO_LITE, is_vec=True)
+    decoded_neuron_infos = chain_utils.create_scale_object_from_scale_encoding(vec_u8, fcst.NEURON_INFO_LITE, is_vec=True)
     if decoded_neuron_infos is None:
         return []
 
