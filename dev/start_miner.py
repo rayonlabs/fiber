@@ -16,7 +16,7 @@ app = server.factory_app(debug=True)
 app.include_router(get_subnet_router())
 
 
-if os.getenv("ENV", "prod").lower() == "dev":
+if os.getenv("ENV", "dev").lower() == "dev":
     configure_extra_logging_middleware(app)
 
 if __name__ == "__main__":

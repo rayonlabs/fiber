@@ -36,7 +36,7 @@ class ColoredFormatter(logging.Formatter):
 # NOTE: Pm2 hates this (colours aren't great), why?
 def get_logger(name: str):
     logger = logging.getLogger(name.split(".")[-1])
-    mode: str = os.getenv("ENV", "prod").lower()
+    mode: str = os.getenv("ENV", "dev").lower()
     logger.setLevel(logging.DEBUG if mode != "prod" else logging.INFO)
     logger.handlers.clear()
 
