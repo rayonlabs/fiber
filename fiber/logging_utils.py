@@ -65,16 +65,14 @@ def get_logger(name: str):
     mode: str = os.getenv("ENV", "dev").lower()
     log_level = "DEBUG" if mode != "prod" else "INFO"
 
-    # Define the log format
-    log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-                  "<level>{level: <8}</level> | "
-                  "<cyan>{name}</cyan>:"
-                  "<cyan>{function}</cyan>:"
-                  "<cyan>{line}</cyan> - "
-                  "<level>{message}</level>")
+    # Define the log format (all on one line)
+    log_format = ("{time:YYYY-MM-DD HH:mm:ss.SSS} | "
+                  "{level: <8} | "
+                  "{name}:{function}:{line} - "
+                  "{message}")
 
     # Add a new handler with the appropriate log level and format
-    logger.add(sys.stdout, format=log_format, level=log_level, colorize=True)
+    logger.add(sys.stdout, format=log_format, level=log_level, colorize=False)
 
     logger.info(f"Logging mode is {log_level}")
     return logger.bind(name=name.split(".")[-1])
