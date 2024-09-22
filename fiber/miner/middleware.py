@@ -13,7 +13,8 @@ from fiber.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-async def _logging_middleware(request: Request, call_next: ASGIApp) -> Response:
+
+async def _logging_middleware(request: Request, call_next) -> Response:
     logger.debug(f"Received request: {request.method} {request.url}")
     logger.debug(f"Request headers: {request.headers}")
 
