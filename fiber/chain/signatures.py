@@ -12,11 +12,11 @@ def sign_message(keypair: Keypair, message: str | None) -> str | None:
     return f"0x{keypair.sign(message).hex()}"
 
 
-def verify_signature(message: str | None, signature: str, ss58_address: str) -> bool:
+def verify_signature(message: str | None, signature: str, signer_ss58_address: str) -> bool:
     if message is None:
         return False
     try:
-        keypair = Keypair(ss58_address=ss58_address)
+        keypair = Keypair(ss58_address=signer_ss58_address)
         return keypair.verify(data=message, signature=signature)
     except ValueError:
         return False

@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv("dev/dev.env")  # Important to load this before importing anything else!
+load_dotenv("dev.env")  # Important to load this before importing anything else!
 
 from fiber.logging_utils import get_logger
 from fiber.miner import server
