@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 from colorama import Back, Fore, Style, init
 from loguru import logger
@@ -33,11 +34,47 @@ class ColoredFormatter(logging.Formatter):
         return message
 
 
-# NOTE: Pm2 hates this (colours aren't great), why?
+# # NOTE: Pm2 hates this (colours aren't great), why?
+# def get_logger(name: str):
+#     logger = logging.getLogger(name.split(".")[-1])
+#     mode: str = os.getenv("ENV", "prod")
+#     logger.setLevel(logging.DEBUG if mode != "prod" else logging.INFO)
+#     logger.handlers.clear()
+
+#     format_string = (
+#         "$BLUE%(asctime)s.%(msecs)03d$RESET | "
+#         "$COLOR$BOLD%(levelname)-8s$RESET | "
+#         "$BLUE%(name)s$RESET:"
+#         "$BLUE%(funcName)s$RESET:"
+#         "$BLUE%(lineno)d$RESET - "
+#         "$COLOR$BOLD%(message)s$RESET"
+#     )
+
+#     colored_formatter = ColoredFormatter(format_string, datefmt="%Y-%m-%d %H:%M:%S")
+
+#     console_handler = logging.StreamHandler(sys.stdout)
+#     console_handler.setFormatter(colored_formatter)
+#     logger.addHandler(console_handler)
+
+#     logger.debug(f"Mode is {mode}")
+#     return logger
+
+
 def get_logger(name: str):
     logger.remove()
     mode: str = os.getenv("ENV", "dev").lower()
     log_level = "DEBUG" if mode != "prod" else "INFO"
-    logger.add(sink=lambda msg: print(msg), level=log_level)
+
+    # Define the log format
+    log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+                  "<level>{level: <8}</level> | "
+                  "<cyan>{name}</cyan>:"
+                  "<cyan>{function}</cyan>:"
+                  "<cyan>{line}</cyan> - "
+                  "<level>{message}</level>")
+
+    # Add a new handler with the appropriate log level and format
+    logger.add(sys.stdout, format=log_format, level=log_level, colorize=True)
+
     logger.info(f"Logging mode is {log_level}")
     return logger.bind(name=name.split(".")[-1])
