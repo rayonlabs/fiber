@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv("dev/dev.env")
+load_dotenv("dev.env")
 import asyncio
 
 import httpx
@@ -25,8 +25,12 @@ async def main():
 
     # Handshake with miner
     miner_address = "http://localhost:7999"
+    miner_hotkey_ss58_address = "5xyz_some_miner_hotkey"
     symmetric_key_str, symmetric_key_uuid = await handshake.perform_handshake(
-        keypair=keypair, httpx_client=httpx_client, server_address=miner_address
+        keypair=keypair,
+        httpx_client=httpx_client,
+        server_address=miner_address,
+        miner_hotkey_ss58_address=miner_hotkey_ss58_address,
     )
 
     if symmetric_key_str is None or symmetric_key_uuid is None:
@@ -43,6 +47,7 @@ async def main():
         keypair=keypair,
         symmetric_key_uuid=symmetric_key_uuid,
         validator_ss58_address=keypair.ss58_address,
+        miner_ss58_address=miner_hotkey_ss58_address,
         payload={},
         endpoint="/example-subnet-request",
     )
