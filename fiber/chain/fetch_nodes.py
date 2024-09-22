@@ -65,14 +65,12 @@ def _encode_params(
         scale_obj = substrate.create_scale_object(param["type"])
         if isinstance(params, list):
             param_data += scale_obj.encode(params[i])
-            assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
-        else:
-            if param["name"] not in params:
-                raise ValueError(f"Missing param {param['name']} in params dict.")
-
+        elif param["name"] in params:
             param_data += scale_obj.encode(params[param["name"]])
-            assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
+        else:
+            raise ValueError(f"Missing param {param['name']} in params dict.")
 
+        assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
     return param_data.to_hex()
 
 
