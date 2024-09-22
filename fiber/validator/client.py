@@ -34,7 +34,7 @@ def get_headers_with_nonce(
     )
     signature = signatures.sign_message(keypair, message)
     return {
-        "Content-Type": "application/json",
+        "Content-Type": "application/octet-stream",
         cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
         cst.MINER_HOTKEY: miner_ss58_address,
