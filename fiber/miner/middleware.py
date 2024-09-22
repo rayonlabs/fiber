@@ -10,7 +10,7 @@ from fiber.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
-async def _logging_middleware(request: Request, call_next: ASGIApp) -> Response:
+async def _logging_middleware(request: Request, call_next) -> Response:
     response = await call_next(request)
     if response.status_code != 200:
         response_body = b""
