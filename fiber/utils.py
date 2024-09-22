@@ -12,7 +12,4 @@ def fernet_to_symmetric_key(fernet: Fernet) -> str:
 
 
 def construct_header_signing_message(nonce: str, miner_hotkey: str, symmetric_key_uuid: str) -> str:
-    if symmetric_key_uuid:
-        return f"{nonce}:{miner_hotkey}:{symmetric_key_uuid}"
-    else:
-        return f"{nonce}:{miner_hotkey}"
+    return f"{nonce}:{miner_hotkey}:{symmetric_key_uuid}"
