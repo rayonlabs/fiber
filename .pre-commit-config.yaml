@@ -14,7 +14,7 @@ repos:
     rev: 'v0.1.3'
     hooks:
         - id: ruff
-          args: [--fix, --exit-non-zero-on-fix, --line-length=120]
+          args: [--fix, --exit-non-zero-on-fix, --line-length=130]
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.5
     hooks:
