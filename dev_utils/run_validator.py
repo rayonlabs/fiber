@@ -8,7 +8,7 @@ import asyncio
 import httpx
 from cryptography.fernet import Fernet
 
-from fiber.chain import chain_utils, interface
+from fiber.chain import chain_utils
 from fiber.logging_utils import get_logger
 from fiber.validator import client as vali_client
 from fiber.validator import handshake
@@ -20,7 +20,6 @@ async def main():
     # Load needed stuff
     wallet_name = os.getenv("WALLET_NAME", "default")
     hotkey_name = os.getenv("HOTKEY_NAME", "default")
-    substrate = interface.get_substrate(subtensor_network="test")
     keypair = chain_utils.load_hotkey_keypair(wallet_name, hotkey_name)
     httpx_client = httpx.AsyncClient()
 

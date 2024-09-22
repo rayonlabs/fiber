@@ -18,6 +18,7 @@ nodes.json
 .DS_Store
 embeddings_for_testing.txt
 
+*.encrypted
 hotkey_scores.json
 tmp/*
 dbmate
