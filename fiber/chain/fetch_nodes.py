@@ -12,6 +12,8 @@ from fiber.chain import models, type_registries
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
+
+
 def _normalise_u16_float(x: int) -> float:
     return float(x) / float(fcst.U16_MAX)
 

@@ -2,6 +2,8 @@ EXCHANGE_SYMMETRIC_KEY_ENDPOINT = "exchange-symmetric-key"
 PUBLIC_ENCRYPTION_KEY_ENDPOINT = "public-encryption-key"
 SYMMETRIC_KEY_UUID = "symmetric-key-uuid"
 HOTKEY = "hotkey"
+MINER_HOTKEY = "miner-hotkey"
+VALIDATOR_HOTKEY = "validator-hotkey"
 NEURON_INFO_LITE = "NeuronInfoLite"
 
 FINNEY_NETWORK = "finney"
