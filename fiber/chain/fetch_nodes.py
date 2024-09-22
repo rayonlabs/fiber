@@ -132,7 +132,7 @@ def _query_runtime_api(
 
     as_scale_bytes = scalecodec.ScaleBytes(json_result["result"])
 
-    scale_object = utils.create_scale_object_from_scale_bytes(return_type, as_scale_bytes)
+    scale_object = chain_utils.create_scale_object_from_scale_bytes(return_type, as_scale_bytes)
 
     if scale_object.data.to_hex() == "0x0400":
         return None
