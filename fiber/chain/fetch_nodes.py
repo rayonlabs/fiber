@@ -140,7 +140,7 @@ def _query_runtime_api(
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
 def _get_nodes_for_uid(substrate: SubstrateInterface, netuid: int, block: int | None = None):
-    logger.debug(f"Substrate interface is connected: {substrate.websocket.connected}")
+    logger.debug(f"Substrate interface is connected: {substrate.websocket is not None}")
     with substrate as si:
         hex_bytes_result = _query_runtime_api(
             substrate=si,
