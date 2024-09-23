@@ -35,7 +35,7 @@ class ColoredFormatter(logging.Formatter):
 
 def get_logger(name: str):
     logger = logging.getLogger(name.split(".")[-1])
-    mode: str = os.getenv("ENV", "prod")
+    mode: str = os.getenv("ENV", "prod").lower()
 
     logger.setLevel(logging.DEBUG if mode != "prod" else logging.INFO)
     logger.handlers.clear()
