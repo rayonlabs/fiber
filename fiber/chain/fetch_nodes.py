@@ -9,6 +9,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from fiber import constants as fcst
 from fiber.chain import chain_utils as chain_utils
 from fiber.chain import models, type_registries
+from fiber.chain.interface import get_substrate
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -143,6 +144,7 @@ def _query_runtime_api(
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
 def _get_nodes_for_uid(substrate: SubstrateInterface, netuid: int, block: int | None = None):
     logger.debug(f"Substrate interface is connected: {substrate.websocket is not None}")
+
     with substrate as si:
         hex_bytes_result = _query_runtime_api(
             substrate=si,
@@ -156,11 +158,11 @@ def _get_nodes_for_uid(substrate: SubstrateInterface, netuid: int, block: int | 
             bytes_result = bytes.fromhex(hex_bytes_result[2:])
         else:
             bytes_result = bytes.fromhex(hex_bytes_result)
-
     return _get_nodes_from_vec8(bytes_result)
 
 
 def get_nodes_for_netuid(substrate: SubstrateInterface, netuid: int, block: int | None = None) -> list[models.Node]:
-    # Context manager to close substrate interface connection after this
-
+    # Make a new substrate connection for this. Could I add this to the _get_nodes_for_uid function
+    # and do the try: except: reraise pattern?
+    substrate = get_substrate(subtensor_address=substrate.url)
     return _get_nodes_for_uid(substrate, netuid, block)
