@@ -25,4 +25,3 @@ class SymmetricKeyExchange(BaseModel):
 class PublicKeyResponse(BaseModel):
     public_key: str
     timestamp: float
-    hotkey: str

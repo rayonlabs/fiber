@@ -18,7 +18,6 @@ async def get_public_key(config: Config = Depends(get_config)):
     return PublicKeyResponse(
         public_key=public_key,
         timestamp=time.time(),
-        hotkey=config.keypair.ss58_address,
     )
 
 

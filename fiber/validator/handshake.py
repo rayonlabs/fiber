@@ -73,7 +73,7 @@ async def send_symmetric_key_to_server(
         f"{server_address}/{cst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}",
         json=payload,
         timeout=timeout,
-        headers=headers,
+        headers={**headers, "Content-Type": "application/json"},
     )
 
     logger.debug(f"Response from {server_address} for {cst.EXCHANGE_SYMMETRIC_KEY_ENDPOINT}: {response.text}")

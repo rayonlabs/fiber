@@ -67,14 +67,12 @@ def _encode_params(
         scale_obj = substrate.create_scale_object(param["type"])
         if isinstance(params, list):
             param_data += scale_obj.encode(params[i])
-            assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
-        else:
-            if param["name"] not in params:
-                raise ValueError(f"Missing param {param['name']} in params dict.")
-
+        elif param["name"] in params:
             param_data += scale_obj.encode(params[param["name"]])
-            assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
+        else:
+            raise ValueError(f"Missing param {param['name']} in params dict.")
 
+        assert isinstance(param_data, scalecodec.ScaleBytes), "Param data is not a ScaleBytes"
     return param_data.to_hex()
 
 
@@ -144,7 +142,7 @@ def _query_runtime_api(
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
 def _get_nodes_for_uid(substrate: SubstrateInterface, netuid: int, block: int | None = None):
-    logger.debug(f"Substrate interface is connected: {substrate.websocket.connected}")
+    logger.debug(f"Substrate interface is connected: {substrate.websocket is not None}")
     with substrate as si:
         hex_bytes_result = _query_runtime_api(
             substrate=si,
