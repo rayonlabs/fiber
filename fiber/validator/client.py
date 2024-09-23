@@ -130,7 +130,7 @@ async def make_streamed_post(
     ) as response:
         try:
             response.raise_for_status()
-            async for line in response.aiter_raw():
+            async for line in response.aiter_lines():
                 yield line
         except httpx.HTTPStatusError as e:
             await response.aread()
