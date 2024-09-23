@@ -25,7 +25,7 @@ async def set_weights_example():
     nodes = get_nodes_for_netuid(substrate=substrate, netuid=176)
     keypair = chain_utils.load_hotkey_keypair(wallet_name="default", hotkey_name="default")
     validator_node_id = substrate.query("SubtensorModule", "Uids", [176, keypair.ss58_address]).value
-    version_key = substrate.query("SubtensorModule", "WeightVersion", [176]).value
+    version_key = substrate.query("SubtensorModule", "WeightsVersionKey", [176]).value
     weights.set_node_weights(
         substrate=substrate,
         keypair=keypair,
