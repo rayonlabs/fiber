@@ -4,8 +4,9 @@ from typing import Any, AsyncGenerator
 import httpx
 from cryptography.fernet import Fernet
 
-from fiber import constants as bcst
+from fiber import Keypair, utils
 from fiber import constants as cst
+from fiber.chain import signatures
 from fiber.chain.models import Node
 from fiber.logging_utils import get_logger
 from fiber.validator.generate_nonce import generate_nonce
@@ -15,9 +16,30 @@ logger = get_logger(__name__)
 
 def _get_headers(symmetric_key_uuid: str, validator_ss58_address: str) -> dict[str, str]:
     return {
-        "Content-Type": "application/octet-stream",  # NOTE: Good?
-        bcst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
-        bcst.SS58_ADDRESS: validator_ss58_address,
+        "Content-Type": "application/json",
+        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
+        cst.VALIDATOR_HOTKEY: validator_ss58_address,
+    }
+
+
+def get_headers_with_nonce(
+    symmetric_key_uuid: str,
+    validator_ss58_address: str,
+    miner_ss58_address: str,
+    keypair: Keypair,
+) -> dict[str, str]:
+    nonce = generate_nonce()
+    message = utils.construct_header_signing_message(
+        nonce=nonce, miner_hotkey=miner_ss58_address, symmetric_key_uuid=symmetric_key_uuid
+    )
+    signature = signatures.sign_message(keypair, message)
+    return {
+        "Content-Type": "application/octet-stream",
+        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
+        cst.VALIDATOR_HOTKEY: validator_ss58_address,
+        cst.MINER_HOTKEY: miner_ss58_address,
+        cst.NONCE: nonce,
+        cst.SIGNATURE: signature,
     }
 
 
@@ -61,18 +83,20 @@ async def make_non_streamed_post(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     validator_ss58_address: str,
+    miner_ss58_address: str,
+    keypair: Keypair,
     fernet: Fernet,
     symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> httpx.Response:
-    headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+    headers = get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, miner_ss58_address, keypair)
 
     payload[cst.NONCE] = generate_nonce()
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
     response = await httpx_client.post(
-        content=encrypted_payload,   # NOTE: can this be content?
+        content=encrypted_payload,  # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,
@@ -84,13 +108,15 @@ async def make_streamed_post(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     validator_ss58_address: str,
+    miner_ss58_address: str,
+    keypair: Keypair,
     fernet: Fernet,
     symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> AsyncGenerator[bytes, None]:
-    headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+    headers = get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, miner_ss58_address, keypair)
 
     payload[cst.NONCE] = generate_nonce()
     encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
@@ -104,7 +130,7 @@ async def make_streamed_post(
     ) as response:
         try:
             response.raise_for_status()
-            async for line in response.aiter_raw():
+            async for line in response.aiter_lines():
                 yield line
         except httpx.HTTPStatusError as e:
             await response.aread()

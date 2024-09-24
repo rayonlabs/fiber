@@ -43,12 +43,12 @@ def main():
     assert isinstance(network, str)
 
 
-    substrate_interface = interface.get_substrate_interface(subtensor_address=chain_endpoint, subtensor_network=network)
+    substrate = interface.get_substrate(subtensor_address=chain_endpoint, subtensor_network=network)
     keypair = chain_utils.load_hotkey_keypair(wallet_name=wallet_name, hotkey_name=wallet_hotkey)
     coldkey_keypair_pub = chain_utils.load_coldkeypub_keypair(wallet_name=wallet_name)
 
     success = post_ip_to_chain.post_node_ip_to_chain(
-        substrate_interface=substrate_interface,
+        substrate=substrate,
         keypair=keypair,
         netuid=args.netuid,
         external_ip=args.external_ip,

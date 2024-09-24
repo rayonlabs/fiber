@@ -20,13 +20,8 @@ class SymmetricKeyInfo:
 
 class SymmetricKeyExchange(BaseModel):
     encrypted_symmetric_key: str
-    symmetric_key_uuid: str
-    ss58_address: str
-    timestamp: float
-    nonce: str
 
 
 class PublicKeyResponse(BaseModel):
     public_key: str
     timestamp: float
-    hotkey: str

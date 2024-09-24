@@ -8,7 +8,8 @@ from substrateinterface import Keypair, SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
-from fiber.chain_interactions.chain_utils import format_error_message
+from fiber.chain.chain_utils import format_error_message
+from fiber.chain.interface import get_substrate
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -25,55 +26,56 @@ def _query_subtensor(
     block: int | None = None,
     params: int | None = None,
 ) -> ScaleType:
-    return substrate.query(
-        module="SubtensorModule",
-        storage_function=name,
-        params=params,  # type: ignore
-        block_hash=(None if block is None else substrate.get_block_hash(block)),  # type: ignore
-    )
+    try:
+        return substrate.query(
+            module="SubtensorModule",
+            storage_function=name,
+            params=params,  # type: ignore
+            block_hash=(None if block is None else substrate.get_block_hash(block)),  # type: ignore
+        )
+    except Exception:
+        # Should prevent SSL errors
+        substrate = get_substrate(subtensor_address=substrate.url)
+        raise
 
 
 def _get_hyperparameter(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     param_name: str,
     netuid: int,
     block: int | None = None,
 ) -> list[int] | int | None:
     subnet_exists = getattr(
-        _query_subtensor(substrate_interface, "NetworksAdded", block, [netuid]),  # type: ignore
+        _query_subtensor(substrate, "NetworksAdded", block, [netuid]),  # type: ignore
         "value",
         False,
     )
     if not subnet_exists:
         return None
     return getattr(
-        _query_subtensor(substrate_interface, param_name, block, [netuid]),  # type: ignore
+        _query_subtensor(substrate, param_name, block, [netuid]),  # type: ignore
         "value",
         None,
     )
 
 
-def _blocks_since_last_update(substrate_interface: SubstrateInterface, netuid: int, node_id: int) -> int | None:
-    current_block = substrate_interface.get_block_number(None)  # type: ignore
-    last_updated = _get_hyperparameter(substrate_interface, "LastUpdate", netuid)
+def _blocks_since_last_update(substrate: SubstrateInterface, netuid: int, node_id: int) -> int | None:
+    current_block = substrate.get_block_number(None)  # type: ignore
+    last_updated = _get_hyperparameter(substrate, "LastUpdate", netuid)
     assert not isinstance(last_updated, int), "LastUpdate should be a list of ints"
     if last_updated is None:
         return None
     return current_block - int(last_updated[node_id])
 
 
-def _min_interval_to_set_weights(substrate_interface: SubstrateInterface, netuid: int) -> int:
-    weights_set_rate_limit = _get_hyperparameter(substrate_interface, "WeightsSetRateLimit", netuid)
+def _min_interval_to_set_weights(substrate: SubstrateInterface, netuid: int) -> int:
+    weights_set_rate_limit = _get_hyperparameter(substrate, "WeightsSetRateLimit", netuid)
     assert isinstance(weights_set_rate_limit, int), "WeightsSetRateLimit should be an int"
     return weights_set_rate_limit
 
 
 def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[float]) -> tuple[list[int], list[int]]:
-    if (
-        len(node_ids) != len(node_weights)
-        or any(uid < 0 for uid in node_ids)
-        or any(weight < 0 for weight in node_weights)
-    ):
+    if len(node_ids) != len(node_weights) or any(uid < 0 for uid in node_ids) or any(weight < 0 for weight in node_weights):
         raise ValueError("Invalid input: length mismatch or negative values")
     if not any(node_weights):
         return [], []
@@ -106,16 +108,15 @@ def log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     wait=wait_exponential(multiplier=1.5, min=2, max=5),
     reraise=True,
 )
-@log_and_reraise
+@_log_and_reraise
 def _send_extrinsic(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     extrinsic_to_send: GenericExtrinsic,
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
 ) -> tuple[bool, str | None]:
-    
     ## Context manager here so if we need to reconnect, the retry loop will catch it
-    with substrate_interface as si:
+    with substrate as si:
         response = si.submit_extrinsic(
             extrinsic_to_send,
             wait_for_inclusion=wait_for_inclusion,
@@ -131,16 +132,16 @@ def _send_extrinsic(
         return False, format_error_message(response.error_message)
 
 
-def can_set_weights(substrate_interface: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
-    blocks_since_update = _blocks_since_last_update(substrate_interface, netuid, validator_node_id)
-    min_interval = _min_interval_to_set_weights(substrate_interface, netuid)
+def _can_set_weights(substrate: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
+    blocks_since_update = _blocks_since_last_update(substrate, netuid, validator_node_id)
+    min_interval = _min_interval_to_set_weights(substrate, netuid)
     if min_interval is None:
         return True
     return blocks_since_update is not None and blocks_since_update > min_interval
 
 
 def set_node_weights(
-    substrate_interface: SubstrateInterface,
+    substrate: SubstrateInterface,
     keypair: Keypair,
     node_ids: list[int],
     node_weights: list[float],
@@ -153,11 +154,10 @@ def set_node_weights(
 ) -> bool:
     node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
 
-    # Closing first to prevent very commmon SSL errors - SI will automatically reconnect
-    substrate_interface.close()
+    # Fetch a new substrate object to reset the connection
+    substrate = get_substrate(subtensor_address=substrate.url)
 
-
-    rpc_call = substrate_interface.compose_call(
+    rpc_call = substrate.compose_call(
         call_module="SubtensorModule",
         call_function="set_weights",
         call_params={
@@ -167,14 +167,12 @@ def set_node_weights(
             "version_key": version_key,
         },
     )
-    extrinsic_to_send = substrate_interface.create_signed_extrinsic(call=rpc_call, keypair=keypair, era={"period": 5})
+    extrinsic_to_send = substrate.create_signed_extrinsic(call=rpc_call, keypair=keypair, era={"period": 5})
 
     weights_can_be_set = False
     for attempt in range(1, max_attempts + 1):
-        if not can_set_weights(substrate_interface, netuid, validator_node_id):
-            logger.info(
-                logger.info(f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs...")
-            )
+        if not _can_set_weights(substrate, netuid, validator_node_id):
+            logger.info(logger.info(f"Skipping attempt {attempt}/{max_attempts}. Too soon to set weights. Will wait 30 secs..."))
             time.sleep(30)
             continue
         else:
@@ -188,7 +186,7 @@ def set_node_weights(
     logger.info("Attempting to set weights...")
 
     success, error_message = _send_extrinsic(
-        substrate_interface=substrate_interface,
+        substrate=substrate,
         extrinsic_to_send=extrinsic_to_send,
         wait_for_inclusion=wait_for_inclusion,
         wait_for_finalization=wait_for_finalization,
@@ -208,5 +206,5 @@ def set_node_weights(
     else:
         logger.error(f"❌ Failed to set weights: {error_message}")
 
-    substrate_interface.close()
+    substrate.close()
     return success
