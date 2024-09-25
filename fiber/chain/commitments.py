@@ -2,8 +2,8 @@ from scalecodec import ScaleType
 from substrateinterface import SubstrateInterface, Keypair
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from fiber.chain_interactions.chain_utils import format_error_message
-from fiber.chain_interactions.models import CommitmentDataField, CommitmentDataFieldType, CommitmentQuery, RawCommitmentQuery
+from fiber.chain.chain_utils import format_error_message
+from fiber.chain.models import CommitmentDataField, CommitmentDataFieldType, CommitmentQuery, RawCommitmentQuery
 from fiber.constants import EMPTY_COMMITMENT_FIELD_TYPE
 from fiber.logging_utils import get_logger
 
