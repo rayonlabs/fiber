@@ -7,6 +7,7 @@ from substrateinterface import Keypair, SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
+from fiber.chain.chain_utils import format_error_message
 from fiber.chain.interface import get_substrate
 from fiber.logging_utils import get_logger
 
@@ -89,19 +90,6 @@ def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[floa
     return node_ids_formatted, node_weights_formatted
 
 
-def _format_error_message(error_message: dict | None) -> str:
-    err_type, err_name, err_description = (
-        "UnknownType",
-        "UnknownError",
-        "Unknown Description",
-    )
-    if isinstance(error_message, dict):
-        err_type = error_message.get("type", err_type)
-        err_name = error_message.get("name", err_name)
-        err_description = error_message.get("docs", [err_description])[0]
-    return f"substrate returned `{err_name} ({err_type})` error. Description: `{err_description}`"
-
-
 def _log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -165,7 +153,7 @@ def _send_weights_to_chain(
             if response.is_success:
                 return True, "Successfully set weights."
 
-            return False, _format_error_message(response.error_message)
+            return False, format_error_message(response.error_message)
 
     return _set_weights()
 
