@@ -91,7 +91,7 @@ def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[floa
     return node_ids_formatted, node_weights_formatted
 
 
-def log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
+def _log_and_reraise(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
