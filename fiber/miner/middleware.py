@@ -12,11 +12,9 @@ logger = get_logger(__name__)
 
 async def _logging_middleware(request: Request, call_next) -> Response:
     logger.debug(f"Received request: {request.method} {request.url}")
-    logger.debug(f"Request headers: {request.headers}")
 
     try:
-        body = await request.body()
-        logger.debug(f"Request body: {body.decode()}")
+        _ = await request.body()
     except Exception as e:
         logger.error(f"Error reading request body: {e}")
 

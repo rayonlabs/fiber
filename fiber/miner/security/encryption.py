@@ -62,7 +62,7 @@ def decrypt_general_payload(
     miner_hotkey: str = Header(...),
     config: Config = Depends(get_config),
 ) -> T:
-    logger.debug(f"Decrypting payload for validator {validator_hotkey} and miner {miner_hotkey}")
+    logger.debug(f"Decrypting payload from validator {validator_hotkey} for miner {miner_hotkey}")
     symmetric_key_info = config.encryption_keys_handler.get_symmetric_key(validator_hotkey, symmetric_key_uuid)
     if not symmetric_key_info:
         raise HTTPException(status_code=400, detail="No symmetric key found for that hotkey and uuid")
