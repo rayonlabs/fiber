@@ -71,11 +71,4 @@ def decrypt_general_payload(
 
     data_dict: dict = json.loads(decrypted_data.decode())
 
-    # below needs sortin'
-    # nonce: str = data_dict.get("nonce", "")
-    # if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
-    #     raise HTTPException(
-    #         status_code=401,
-    #         detail="Oi, nonce invalid!",
-    #     )
     return model(**data_dict)
