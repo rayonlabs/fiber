@@ -219,10 +219,10 @@ def set_node_weights(
     return success
 
 
-def get_node_weights(
+def get_weights_set_by_node(
     substrate: SubstrateInterface,
     netuid: int,
-    validator_node_id: int,
+    node_id: int,
     block: int | None = None,
 ) -> list[tuple[int, int]]:
-    return _query_subtensor(substrate, "Weights", block, [netuid, validator_node_id]).value
+    return _query_subtensor(substrate, "Weights", block, [netuid, node_id]).value
