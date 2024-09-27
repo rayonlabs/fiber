@@ -23,13 +23,13 @@ def _query_subtensor(
     substrate: SubstrateInterface,
     name: str,
     block: int | None = None,
-    params: int | None = None,
+    params: list[int] | None = None,
 ) -> ScaleType:
     try:
         return substrate.query(
             module="SubtensorModule",
             storage_function=name,
-            params=params,  # type: ignore
+            params=params,
             block_hash=(None if block is None else substrate.get_block_hash(block)),  # type: ignore
         )
     except Exception:
@@ -45,14 +45,14 @@ def _get_hyperparameter(
     block: int | None = None,
 ) -> list[int] | int | None:
     subnet_exists = getattr(
-        _query_subtensor(substrate, "NetworksAdded", block, [netuid]),  # type: ignore
+        _query_subtensor(substrate, "NetworksAdded", block, [netuid]),
         "value",
         False,
     )
     if not subnet_exists:
         return None
     return getattr(
-        _query_subtensor(substrate, param_name, block, [netuid]),  # type: ignore
+        _query_subtensor(substrate, param_name, block, [netuid]),
         "value",
         None,
     )
@@ -217,3 +217,12 @@ def set_node_weights(
 
     substrate.close()
     return success
+
+
+def get_weights_set_by_node(
+    substrate: SubstrateInterface,
+    netuid: int,
+    node_id: int,
+    block: int | None = None,
+) -> list[tuple[int, int]]:
+    return _query_subtensor(substrate, "Weights", block, [netuid, node_id]).value
