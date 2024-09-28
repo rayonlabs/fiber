@@ -11,9 +11,9 @@ from pydantic import BaseModel
 
 from fiber.chain import chain_utils, interface
 from fiber.chain.metagraph import Metagraph
-from fiber.miner.core import miner_constants as mcst
-from fiber.miner.core.models.config import Config
-from fiber.miner.security import key_management, nonce_management
+from fiber.networking.miner.core import miner_constants as mcst
+from fiber.networking.miner.core.models.config import Config
+from fiber.networking.miner.security import key_management, nonce_management
 
 T = TypeVar("T", bound=BaseModel)
 

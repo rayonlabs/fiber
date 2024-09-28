@@ -10,25 +10,34 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "namoray", email = "nuevaamor@proton.me" },
+    { name = "namoray", email = "namoray@rayonlabs.ai" },
 ]
 dependencies = [
     "substrate-interface==1.7.10",
     "eth-typing==5.0.0",
     "tenacity==9.0.0",
-    "netaddr==1.3.0",
-    "colorama==0.4.6",
+    "colorama>0.3.0,<=0.4.6",
+    "python-dotenv==1.0.1",
+    "pydantic>2,<=2.9.2",
+]
+
+[project.optional-dependencies]
+full = [
     "fastapi==0.112.0",
     "uvicorn==0.30.5",
     "cryptography==43.0.0",
-    "python-dotenv==1.0.1",
-    "httpx==0.27.0"]
+    "netaddr==1.3.0",
+    "httpx==0.27.0"
+]
+chain = [] # This is empty because chain dependencies are in the main dependencies
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["fiber"]
 
 [project.scripts]
 fiber-post-ip = "fiber.scripts.post_ip_to_chain:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["fiber"]
 
 [tool.hatch.build]
 include = [

@@ -1,5 +1,5 @@
 from scalecodec import ScaleType
-from substrateinterface import SubstrateInterface, Keypair
+from substrateinterface import Keypair, SubstrateInterface
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber.chain.chain_utils import format_error_message
@@ -117,11 +117,11 @@ def set_commitment(
 
     if response.is_success:
         if wait_for_finalization:
-            logger.info("✅ Successfully commited and finalized")
+            logger.info("✅ Successfully committed and finalized")
         elif wait_for_inclusion:
-            logger.info("✅ Successfully commited and included")
+            logger.info("✅ Successfully committed and included")
         else:
-            logger.info("✅ Successfully commited")
+            logger.info("✅ Successfully committed")
 
         return True
     else:
@@ -137,7 +137,7 @@ def query_commitment(
     block: int | None = None,
 ) -> CommitmentQuery | None:
     """
-    Query fields commited to the chain via set_commitment
+    Query fields committed to the chain via set_commitment
     return: None if no commitment has been made previously, otherwise CommitmentQuery
     """
 

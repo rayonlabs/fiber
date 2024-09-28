@@ -10,8 +10,8 @@ from cryptography.fernet import Fernet
 
 from fiber.chain import chain_utils
 from fiber.logging_utils import get_logger
-from fiber.validator import client as vali_client
-from fiber.validator import handshake
+from fiber.networking.validator import client as vali_client
+from fiber.networking.validator import handshake
 
 logger = get_logger(__name__)
 

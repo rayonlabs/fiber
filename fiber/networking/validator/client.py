@@ -9,7 +9,7 @@ from fiber import constants as cst
 from fiber.chain import signatures
 from fiber.chain.models import Node
 from fiber.logging_utils import get_logger
-from fiber.validator.generate_nonce import generate_nonce
+from fiber.networking.validator.generate_nonce import generate_nonce
 
 logger = get_logger(__name__)
 

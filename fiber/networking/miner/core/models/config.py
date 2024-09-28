@@ -4,7 +4,7 @@ import httpx
 from substrateinterface import Keypair
 
 from fiber.chain.metagraph import Metagraph
-from fiber.miner.security import key_management
+from fiber.networking.miner.security import key_management
 
 
 @dataclass

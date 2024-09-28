@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, Header
 
 from fiber import constants as cst
 from fiber.logging_utils import get_logger
-from fiber.miner.core.configuration import Config
-from fiber.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
-from fiber.miner.dependencies import blacklist_low_stake, get_config, verify_request
-from fiber.miner.security.encryption import get_symmetric_key_b64_from_payload
+from fiber.networking.miner.core.configuration import Config
+from fiber.networking.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
+from fiber.networking.miner.dependencies import blacklist_low_stake, get_config, verify_request
+from fiber.networking.miner.security.encryption import get_symmetric_key_b64_from_payload
 
 logger = get_logger(__name__)
 
@@ -28,9 +28,6 @@ async def exchange_symmetric_key(
     symmetric_key_uuid: str = Header(..., alias=cst.SYMMETRIC_KEY_UUID),
     config: Config = Depends(get_config),
 ):
-
-
-
     base64_symmetric_key = get_symmetric_key_b64_from_payload(payload, config.encryption_keys_handler.private_key)
     fernet = Fernet(base64_symmetric_key)
     config.encryption_keys_handler.add_symmetric_key(

@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from fiber.logging_utils import get_logger
-from fiber.miner.core import configuration
-from fiber.miner.endpoints.handshake import factory_router as handshake_factory_router
+from fiber.networking.miner.core import configuration
+from fiber.networking.miner.endpoints.handshake import factory_router as handshake_factory_router
 
 logger = get_logger(__name__)
 
