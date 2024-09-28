@@ -2,9 +2,7 @@ import logging
 import os
 import sys
 
-from colorama import Back, Fore, Style, init
-
-init(autoreset=True)
+from colorama import Back, Fore, Style
 
 
 class ColoredFormatter(logging.Formatter):
