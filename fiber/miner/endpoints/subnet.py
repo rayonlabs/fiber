@@ -10,8 +10,8 @@ from fastapi import Depends
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
 
-from fiber.networking.miner.dependencies import blacklist_low_stake, verify_request
-from fiber.networking.miner.security.encryption import decrypt_general_payload
+from fiber.miner.dependencies import blacklist_low_stake, verify_request
+from fiber.miner.security.encryption import decrypt_general_payload
 
 
 class ExampleSubnetRequest(BaseModel):

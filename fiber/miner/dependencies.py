@@ -4,8 +4,8 @@ from fiber import constants as cst
 from fiber import utils
 from fiber.chain import signatures
 from fiber.logging_utils import get_logger
-from fiber.networking.miner.core import configuration
-from fiber.networking.miner.core.models.config import Config
+from fiber.miner.core import configuration
+from fiber.miner.core.models.config import Config
 
 logger = get_logger(__name__)
 

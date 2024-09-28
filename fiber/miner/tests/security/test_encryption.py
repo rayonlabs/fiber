@@ -9,9 +9,9 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from fastapi import HTTPException
 from pydantic import BaseModel
 
-from fiber.networking.miner.core.models.config import Config
-from fiber.networking.miner.core.models.encryption import SymmetricKeyExchange, SymmetricKeyInfo
-from fiber.networking.miner.security.encryption import (
+from fiber.miner.core.models.config import Config
+from fiber.miner.core.models.encryption import SymmetricKeyExchange, SymmetricKeyInfo
+from fiber.miner.security.encryption import (
     decrypt_general_payload,
     decrypt_symmetric_key_exchange_payload,
 )

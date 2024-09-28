@@ -5,11 +5,11 @@ from unittest.mock import mock_open, patch
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from fiber.networking.miner.core import miner_constants as mcst
-from fiber.networking.miner.core.configuration import _derive_key_from_string
-from fiber.networking.miner.core.models.encryption import SymmetricKeyInfo
-from fiber.networking.miner.security.key_management import EncryptionKeysHandler
-from fiber.networking.miner.security.nonce_management import NonceManager
+from fiber.miner.core import miner_constants as mcst
+from fiber.miner.core.configuration import _derive_key_from_string
+from fiber.miner.core.models.encryption import SymmetricKeyInfo
+from fiber.miner.security.key_management import EncryptionKeysHandler
+from fiber.miner.security.nonce_management import NonceManager
 
 
 class TestKeyHandler(unittest.TestCase):

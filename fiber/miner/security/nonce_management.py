@@ -1,7 +1,7 @@
 import time
 
 from fiber.logging_utils import get_logger
-from fiber.networking.miner.core import miner_constants as mcst
+from fiber.miner.core import miner_constants as mcst
 
 logger = get_logger(__name__)
 

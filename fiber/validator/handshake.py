@@ -9,9 +9,9 @@ from substrateinterface import Keypair
 
 from fiber import constants as cst
 from fiber.logging_utils import get_logger
-from fiber.networking.miner.core.models import encryption
-from fiber.networking.validator.client import get_headers_with_nonce
-from fiber.networking.validator.security.encryption import public_key_encrypt
+from fiber.miner.core.models import encryption
+from fiber.validator.client import get_headers_with_nonce
+from fiber.validator.security.encryption import public_key_encrypt
 
 logger = get_logger(__name__)
 

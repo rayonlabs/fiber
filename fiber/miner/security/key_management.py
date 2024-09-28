@@ -10,9 +10,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 
 from fiber import utils
 from fiber.logging_utils import get_logger
-from fiber.networking.miner.core import miner_constants as mcst
-from fiber.networking.miner.core.models.encryption import SymmetricKeyInfo
-from fiber.networking.miner.security.nonce_management import NonceManager
+from fiber.miner.core import miner_constants as mcst
+from fiber.miner.core.models.encryption import SymmetricKeyInfo
+from fiber.miner.security.nonce_management import NonceManager
 
 logger = get_logger(__name__)
 

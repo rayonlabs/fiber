@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 load_dotenv("dev.env")  # Important to load this before importing anything else!
 
 from fiber.logging_utils import get_logger
-from fiber.networking.miner import server
-from fiber.networking.miner.endpoints.subnet import factory_router as get_subnet_router
-from fiber.networking.miner.middleware import configure_extra_logging_middleware
+from fiber.miner import server
+from fiber.miner.endpoints.subnet import factory_router as get_subnet_router
+from fiber.miner.middleware import configure_extra_logging_middleware
 
 logger = get_logger(__name__)
 
