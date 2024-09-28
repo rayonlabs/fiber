@@ -38,6 +38,7 @@ async def set_weights_example():
         wait_for_finalization=True,
     )
 
+# NOTE this is also a script in /scropts/post_ip_to_chain and you can use it on the cli with fiber-post-ip
 async def post_ip_to_chain_example():
     chain_endpoint = None
     subtensor_network = "test"
