@@ -15,7 +15,7 @@ async def metagraph_example():
     mg.sync_nodes()
     logger.info(f"Found nodes: {mg.nodes}")
 
-    # OR - use the fetch_nodes function
+    # OR - use the fetch_nodes function [this is better :P]
     nodes = get_nodes_for_netuid(substrate=substrate, netuid=176)
     logger.info(f"Found nodes: {nodes}")
 
