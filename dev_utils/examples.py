@@ -1,6 +1,6 @@
 import asyncio
 
-from fiber.chain import chain_utils, interface, metagraph, weights
+from fiber.chain import chain_utils, interface, metagraph, post_ip_to_chain, weights
 from fiber.chain.fetch_nodes import get_nodes_for_netuid
 from fiber.logging_utils import get_logger
 
@@ -38,11 +38,34 @@ async def set_weights_example():
         wait_for_finalization=True,
     )
 
+async def post_ip_to_chain_example():
+    chain_endpoint = None
+    subtensor_network = "test"
+    wallet_name = "default"
+    wallet_hotkey = "default"
+    netuid = 176
+    external_ip = "0.0.0.1"
+    external_port = 8080
+
+    substrate = interface.get_substrate(subtensor_address=chain_endpoint, subtensor_network=subtensor_network)
+    keypair = chain_utils.load_hotkey_keypair(wallet_name=wallet_name, hotkey_name=wallet_hotkey)
+    coldkey_keypair_pub = chain_utils.load_coldkeypub_keypair(wallet_name=wallet_name)
+
+    success = post_ip_to_chain.post_node_ip_to_chain(
+        substrate=substrate,
+        keypair=keypair,
+        netuid=netuid,
+        external_ip=external_ip,
+        external_port=external_port,
+        coldkey_ss58_address=coldkey_keypair_pub.ss58_address,
+    )
+    logger.info(f"Post IP to chain: {success}!")
+
 
 async def main():
     await metagraph_example()
     await set_weights_example()
-
+    await post_ip_to_chain_example()
 
 if __name__ == "__main__":
     asyncio.run(main())
