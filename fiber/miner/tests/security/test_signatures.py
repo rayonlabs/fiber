@@ -25,7 +25,7 @@ def verify_signature(message: str, signature: str, ss58_address: str) -> bool:
 
 class TestSignatureVerification(unittest.TestCase):
     def setUp(self):
-        self.mnemonic = "clip organ olive upper oak void inject side suit toilet stick narrow"  
+        self.mnemonic = "clip organ olive upper oak void inject side suit toilet stick narrow"
         # Don't be dumb and use this for anything...
         self.keypair = Keypair.create_from_mnemonic(self.mnemonic)
         self.message = "Test message"

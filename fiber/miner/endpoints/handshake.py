@@ -28,9 +28,6 @@ async def exchange_symmetric_key(
     symmetric_key_uuid: str = Header(..., alias=cst.SYMMETRIC_KEY_UUID),
     config: Config = Depends(get_config),
 ):
-
-
-
     base64_symmetric_key = get_symmetric_key_b64_from_payload(payload, config.encryption_keys_handler.private_key)
     fernet = Fernet(base64_symmetric_key)
     config.encryption_keys_handler.add_symmetric_key(

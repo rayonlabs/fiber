@@ -1,11 +1,13 @@
 import json
 from pathlib import Path
+from typing import Any
 
 from scalecodec import ScaleBytes, ScaleType
 from scalecodec.base import RuntimeConfiguration
 from scalecodec.type_registry import load_type_registry_preset
 from substrateinterface import Keypair
 
+from fiber import SubstrateInterface
 from fiber.chain import chain_utils as utils
 from fiber.chain import type_registries
 from fiber.logging_utils import get_logger
@@ -103,3 +105,25 @@ def sign_message(keypair: Keypair, message: str | None) -> str | None:
     if message is None:
         return None
     return f"0x{keypair.sign(message).hex()}"
+
+
+
+def query_substrate(
+    substrate: SubstrateInterface, module: str, method: str, params: list[Any], return_value: bool = True
+) -> tuple[SubstrateInterface, Any]:
+    try:
+        query_result = substrate.query(module, method, params)
+
+        return_val = query_result.value if return_value else query_result
+
+        return substrate, return_val
+    except Exception as e:
+        logger.error(f"Query failed with error: {e}. Reconnecting and retrying.")
+
+        substrate = SubstrateInterface(url=substrate.url)
+
+        query_result = substrate.query(module, method, params)
+
+        return_val = query_result.value if return_value else query_result
+
+        return substrate, return_val
