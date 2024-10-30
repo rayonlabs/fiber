@@ -17,7 +17,7 @@ from fiber.miner.security import key_management, nonce_management
 
 T = TypeVar("T", bound=BaseModel)
 
-load_dotenv()
+load_dotenv("dev.env")
 
 
 def _derive_key_from_string(input_string: str, salt: bytes = b"salt_") -> str:
