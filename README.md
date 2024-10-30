@@ -41,11 +41,6 @@ pip install -e .
 pre-commit install
 ```
 
-#### Install Requirements
-```bash
-pip install -r requirements.txt
-``` 
-
 #### Create dev.env file for miner
 ```bash
 WALLET_NAME=<YOUR_WALLET.NAME>

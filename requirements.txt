@@ -1,8 +1,0 @@
-pandas
-#vali
-httpx
-cryptography
-netaddr
-#miner
-fastapi
-uvicorn
