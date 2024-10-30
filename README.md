@@ -46,10 +46,25 @@ pre-commit install
 pip install -r requirements.txt
 ``` 
 
+#### Create dev.env file for miner
+```bash
+WALLET_NAME=<YOUR_WALLET.NAME>
+WALLET_HOTKEY=<YOUR_WALLET_HOTKEY>
+```
+
 #### Run dev miner
 ```bash
 cd dev_utils
 python start_miner.py
+```
+
+#### Create .env file for validator
+```bash
+WALLET_NAME=<YOUR_WALLET.NAME>
+WALLET_HOTKEY=<YOUR_WALLET_HOTKEY>
+NETUID=<NETUID>
+SUBTENSOR_NETWORK=<NETWORK>
+MIN_STAKE_THRESHOLD=<INT>
 ```
 
 #### Run dev validator
