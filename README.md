@@ -41,6 +41,11 @@ pip install -e .
 pre-commit install
 ```
 
+#### Install Requirements
+```bash
+pip install -r requirements.txt
+``` 
+
 #### Run dev miner
 ```bash
 cd dev_utils
