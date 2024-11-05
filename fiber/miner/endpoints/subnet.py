@@ -15,7 +15,7 @@ class ExampleSubnetRequest(BaseModel):
     pass
 
 
-async def example_subnet_request(decrypted_payload: ExampleSubnetRequest):
+async def example_subnet_request(example_body: ExampleSubnetRequest):
     return {"status": "Example request received"}
 
 
