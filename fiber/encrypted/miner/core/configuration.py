@@ -1,19 +1,34 @@
+import base64
 import os
 from functools import lru_cache
 from typing import TypeVar
 
 import httpx
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from fiber.chain import chain_utils, interface
 from fiber.chain.metagraph import Metagraph
-from fiber.miner.core.models.config import Config
-from fiber.miner.security import nonce_management
+from fiber.encrypted.miner.core import miner_constants as mcst
+from fiber.encrypted.miner.core.models.config import Config
+from fiber.encrypted.miner.security import key_management, nonce_management
 
 T = TypeVar("T", bound=BaseModel)
 
 load_dotenv()
+
+
+def _derive_key_from_string(input_string: str, salt: bytes = b"salt_") -> str:
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(input_string.encode()))
+    return key.decode()
 
 
 @lru_cache
@@ -43,8 +58,16 @@ def factory_config() -> Config:
 
     keypair = chain_utils.load_hotkey_keypair(wallet_name, hotkey_name)
 
+    storage_encryption_key = os.getenv("STORAGE_ENCRYPTION_KEY")
+    if storage_encryption_key is None:
+        storage_encryption_key = _derive_key_from_string(mcst.DEFAULT_ENCRYPTION_STRING)
+
+    encryption_keys_handler = key_management.EncryptionKeysHandler(
+        nonce_manager, storage_encryption_key, hotkey=hotkey_name
+    )
+
     return Config(
-        nonce_manager=nonce_manager,
+        encryption_keys_handler=encryption_keys_handler,
         keypair=keypair,
         metagraph=metagraph,
         min_stake_threshold=min_stake_threshold,
