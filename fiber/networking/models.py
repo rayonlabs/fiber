@@ -1,4 +1,3 @@
-from cryptography.fernet import Fernet
 from pydantic import BaseModel
 
 
@@ -16,7 +15,3 @@ class NodeWithFernet(BaseModel):
     ip_type: int
     port: int
     protocol: int = 4
-    fernet: Fernet | None = None
-    symmetric_key_uuid: str | None = None
-
-    model_config = {"arbitrary_types_allowed": True}

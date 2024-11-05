@@ -2,7 +2,6 @@ import json
 from typing import Any, AsyncGenerator
 
 import httpx
-from cryptography.fernet import Fernet
 
 from fiber import Keypair, utils
 from fiber import constants as cst
@@ -14,32 +13,33 @@ from fiber.validator.generate_nonce import generate_nonce
 logger = get_logger(__name__)
 
 
-def _get_headers(symmetric_key_uuid: str, validator_ss58_address: str) -> dict[str, str]:
+def _get_headers(validator_ss58_address: str) -> dict[str, str]:
     return {
         "Content-Type": "application/json",
-        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
     }
 
 
 def get_headers_with_nonce(
-    symmetric_key_uuid: str,
+    payload_str: str,
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
 ) -> dict[str, str]:
     nonce = generate_nonce()
-    message = utils.construct_header_signing_message(
-        nonce=nonce, miner_hotkey=miner_ss58_address, symmetric_key_uuid=symmetric_key_uuid
-    )
-    signature = signatures.sign_message(keypair, message)
+    message = utils.construct_header_signing_message(nonce=nonce, miner_hotkey=miner_ss58_address, payload_str=payload_str)
+    header_hash = signatures.get_header_hash(message)
+    signature = signatures.sign_message(keypair, header_hash)
+    # To verify this:
+    # Check you can get the header hash from the headers and payload body
+    # Then check the hash matches the signature
     return {
         "Content-Type": "application/octet-stream",
-        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
         cst.MINER_HOTKEY: miner_ss58_address,
         cst.NONCE: nonce,
         cst.SIGNATURE: signature,
+        cst.HEADER_HASH: header_hash,
     }
 
 
@@ -65,11 +65,10 @@ async def make_non_streamed_get(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     validator_ss58_address: str,
-    symmetric_key_uuid: str,
     endpoint: str,
     timeout: float = 10,
 ):
-    headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
+    headers = _get_headers(validator_ss58_address)
     logger.debug(f"headers: {headers}")
     response = await httpx_client.get(
         timeout=timeout,
@@ -85,18 +84,15 @@ async def make_non_streamed_post(
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
-    fernet: Fernet,
-    symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> httpx.Response:
-    headers = get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, miner_ss58_address, keypair)
+    payload_str = json.dumps(payload)
+    headers = get_headers_with_nonce(payload_str, validator_ss58_address, miner_ss58_address, keypair)
 
-    payload[cst.NONCE] = generate_nonce()
-    encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
     response = await httpx_client.post(
-        content=encrypted_payload,  # NOTE: can this be content?
+        content=payload_str.encode(),  # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,
@@ -110,21 +106,17 @@ async def make_streamed_post(
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
-    fernet: Fernet,
-    symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> AsyncGenerator[bytes, None]:
-    headers = get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, miner_ss58_address, keypair)
-
-    payload[cst.NONCE] = generate_nonce()
-    encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
+    payload_str = json.dumps(payload)
+    headers = get_headers_with_nonce(payload_str, validator_ss58_address, miner_ss58_address, keypair)
 
     async with httpx_client.stream(
         method="POST",
         url=server_address + endpoint,
-        content=encrypted_payload,  # NOTE: can this be content?
+        content=payload_str.encode(),  # NOTE: can this be content?
         headers=headers,
         timeout=timeout,
     ) as response:
