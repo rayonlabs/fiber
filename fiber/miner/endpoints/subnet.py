@@ -12,7 +12,7 @@ from fiber.miner.dependencies import blacklist_low_stake, verify_request
 
 
 class ExampleSubnetRequest(BaseModel):
-    pass
+    hi: str
 
 
 async def example_subnet_request(example_body: ExampleSubnetRequest):

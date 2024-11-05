@@ -33,7 +33,7 @@ def get_headers_with_nonce(
     # To verify this:
     # Get the payload hash, get the signing message, check the hash matches the signature
     return {
-        "Content-Type": "application/octet-stream",
+        "Content-Type": "application/json",
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
         cst.MINER_HOTKEY: miner_ss58_address,
         cst.NONCE: nonce,
@@ -90,7 +90,7 @@ async def make_non_streamed_post(
     headers = get_headers_with_nonce(content, validator_ss58_address, miner_ss58_address, keypair)
 
     response = await httpx_client.post(
-        content=content,  # NOTE: can this be content?
+        json=payload,  # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,

@@ -29,7 +29,7 @@ async def verify_request(
             detail="Oi, that nonce is not valid!",
         )
 
-    body = await request.body()
+    body = await request.body()  # Will this cause issues when it comes to getting the body?
     payload_hash = signatures.get_hash(body)
     message = utils.construct_header_signing_message(nonce=nonce, miner_hotkey=miner_hotkey, payload_hash=payload_hash)
     if not signatures.verify_signature(
