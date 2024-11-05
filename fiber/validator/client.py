@@ -21,25 +21,23 @@ def _get_headers(validator_ss58_address: str) -> dict[str, str]:
 
 
 def get_headers_with_nonce(
-    payload_str: str,
+    payload_str: bytes,
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
 ) -> dict[str, str]:
     nonce = generate_nonce()
-    message = utils.construct_header_signing_message(nonce=nonce, miner_hotkey=miner_ss58_address, payload_str=payload_str)
-    header_hash = signatures.get_header_hash(message)
-    signature = signatures.sign_message(keypair, header_hash)
+    payload_hash = signatures.get_hash(payload_str)
+    message = utils.construct_header_signing_message(nonce=nonce, miner_hotkey=miner_ss58_address, payload_hash=payload_hash)
+    signature = signatures.sign_message(keypair, message)
     # To verify this:
-    # Check you can get the header hash from the headers and payload body
-    # Then check the hash matches the signature
+    # Get the payload hash, get the signing message, check the hash matches the signature
     return {
         "Content-Type": "application/octet-stream",
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
         cst.MINER_HOTKEY: miner_ss58_address,
         cst.NONCE: nonce,
         cst.SIGNATURE: signature,
-        cst.HEADER_HASH: header_hash,
     }
 
 
@@ -88,11 +86,11 @@ async def make_non_streamed_post(
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> httpx.Response:
-    payload_str = json.dumps(payload)
-    headers = get_headers_with_nonce(payload_str, validator_ss58_address, miner_ss58_address, keypair)
+    content = json.dumps(payload).encode()
+    headers = get_headers_with_nonce(content, validator_ss58_address, miner_ss58_address, keypair)
 
     response = await httpx_client.post(
-        content=payload_str.encode(),  # NOTE: can this be content?
+        content=content,  # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,
@@ -110,13 +108,13 @@ async def make_streamed_post(
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> AsyncGenerator[bytes, None]:
-    payload_str = json.dumps(payload)
-    headers = get_headers_with_nonce(payload_str, validator_ss58_address, miner_ss58_address, keypair)
+    content = json.dumps(payload).encode()
+    headers = get_headers_with_nonce(content, validator_ss58_address, miner_ss58_address, keypair)
 
     async with httpx_client.stream(
         method="POST",
         url=server_address + endpoint,
-        content=payload_str.encode(),  # NOTE: can this be content?
+        content=content,  # NOTE: can this be content?
         headers=headers,
         timeout=timeout,
     ) as response:

@@ -13,8 +13,8 @@ def sign_message(keypair: Keypair, message: str | None) -> str | None:
     return f"0x{keypair.sign(message).hex()}"
 
 
-def get_header_hash(header: str) -> str:
-    return hashlib.sha256(header.encode()).hexdigest()
+def get_hash(body: bytes) -> str:
+    return hashlib.sha256(body).hexdigest()
 
 
 def verify_signature(message: str | None, signature: str, signer_ss58_address: str) -> bool:
