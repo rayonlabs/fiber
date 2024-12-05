@@ -2,38 +2,41 @@ import json
 from typing import Any, AsyncGenerator
 
 import httpx
+from cryptography.fernet import Fernet
 
-from fiber import Keypair, utils
+from fiber import Keypair
 from fiber import constants as cst
 from fiber.chain import signatures
 from fiber.chain.models import Node
+from fiber.encrypted import utils
+from fiber.encrypted.validator.generate_nonce import generate_nonce
 from fiber.logging_utils import get_logger
-from fiber.validator.generate_nonce import generate_nonce
 
 logger = get_logger(__name__)
 
 
-def _get_headers(validator_ss58_address: str) -> dict[str, str]:
+def _get_headers(symmetric_key_uuid: str, validator_ss58_address: str) -> dict[str, str]:
     return {
         "Content-Type": "application/json",
+        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
     }
 
 
 def get_headers_with_nonce(
-    payload_str: bytes,
+    symmetric_key_uuid: str,
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
 ) -> dict[str, str]:
     nonce = generate_nonce()
-    payload_hash = signatures.get_hash(payload_str)
-    message = utils.construct_header_signing_message(nonce=nonce, miner_hotkey=miner_ss58_address, payload_hash=payload_hash)
+    message = utils.construct_header_signing_message(
+        nonce=nonce, miner_hotkey=miner_ss58_address, symmetric_key_uuid=symmetric_key_uuid
+    )
     signature = signatures.sign_message(keypair, message)
-    # To verify this:
-    # Get the payload hash, get the signing message, check the hash matches the signature
     return {
-        "Content-Type": "application/json",
+        "Content-Type": "application/octet-stream",
+        cst.SYMMETRIC_KEY_UUID: symmetric_key_uuid,
         cst.VALIDATOR_HOTKEY: validator_ss58_address,
         cst.MINER_HOTKEY: miner_ss58_address,
         cst.NONCE: nonce,
@@ -63,10 +66,11 @@ async def make_non_streamed_get(
     httpx_client: httpx.AsyncClient,
     server_address: str,
     validator_ss58_address: str,
+    symmetric_key_uuid: str,
     endpoint: str,
     timeout: float = 10,
 ):
-    headers = _get_headers(validator_ss58_address)
+    headers = _get_headers(symmetric_key_uuid, validator_ss58_address)
     logger.debug(f"headers: {headers}")
     response = await httpx_client.get(
         timeout=timeout,
@@ -82,15 +86,18 @@ async def make_non_streamed_post(
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
+    fernet: Fernet,
+    symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> httpx.Response:
-    content = json.dumps(payload).encode()
-    headers = get_headers_with_nonce(content, validator_ss58_address, miner_ss58_address, keypair)
+    headers = get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, miner_ss58_address, keypair)
 
+    payload[cst.NONCE] = generate_nonce()
+    encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
     response = await httpx_client.post(
-        json=payload,  # NOTE: can this be content?
+        content=encrypted_payload,  # NOTE: can this be content?
         timeout=timeout,
         headers=headers,
         url=server_address + endpoint,
@@ -104,17 +111,21 @@ async def make_streamed_post(
     validator_ss58_address: str,
     miner_ss58_address: str,
     keypair: Keypair,
+    fernet: Fernet,
+    symmetric_key_uuid: str,
     endpoint: str,
     payload: dict[str, Any],
     timeout: float = 10,
 ) -> AsyncGenerator[bytes, None]:
-    content = json.dumps(payload).encode()
-    headers = get_headers_with_nonce(content, validator_ss58_address, miner_ss58_address, keypair)
+    headers = get_headers_with_nonce(symmetric_key_uuid, validator_ss58_address, miner_ss58_address, keypair)
+
+    payload[cst.NONCE] = generate_nonce()
+    encrypted_payload = fernet.encrypt(json.dumps(payload).encode())
 
     async with httpx_client.stream(
         method="POST",
         url=server_address + endpoint,
-        content=content,  # NOTE: can this be content?
+        content=encrypted_payload,  # NOTE: can this be content?
         headers=headers,
         timeout=timeout,
     ) as response:

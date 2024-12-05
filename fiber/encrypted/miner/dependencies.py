@@ -1,11 +1,11 @@
-from fastapi import Depends, Header, HTTPException, Request
+from fastapi import Depends, Header, HTTPException
 
 from fiber import constants as cst
-from fiber import utils
 from fiber.chain import signatures
+from fiber.encrypted import utils
+from fiber.encrypted.miner.core import configuration
+from fiber.encrypted.miner.core.models.config import Config
 from fiber.logging_utils import get_logger
-from fiber.miner.core import configuration
-from fiber.miner.core.models.config import Config
 
 logger = get_logger(__name__)
 
@@ -15,25 +15,22 @@ def get_config() -> Config:
 
 
 async def verify_request(
-    request: Request,
     validator_hotkey: str = Header(..., alias=cst.VALIDATOR_HOTKEY),
     signature: str = Header(..., alias=cst.SIGNATURE),
     miner_hotkey: str = Header(..., alias=cst.MINER_HOTKEY),
     nonce: str = Header(..., alias=cst.NONCE),
+    symmetric_key_uuid: str = Header(..., alias=cst.SYMMETRIC_KEY_UUID),
     config: Config = Depends(get_config),
 ):
-    if not config.nonce_manager.nonce_is_valid(nonce):
+    if not config.encryption_keys_handler.nonce_manager.nonce_is_valid(nonce):
         logger.debug("Nonce is not valid!")
         raise HTTPException(
             status_code=401,
             detail="Oi, that nonce is not valid!",
         )
 
-    body = await request.body()  # Will this cause issues when it comes to getting the body?
-    payload_hash = signatures.get_hash(body)
-    message = utils.construct_header_signing_message(nonce=nonce, miner_hotkey=miner_hotkey, payload_hash=payload_hash)
     if not signatures.verify_signature(
-        message=message,
+        message=utils.construct_header_signing_message(nonce, miner_hotkey, symmetric_key_uuid),
         signer_ss58_address=validator_hotkey,
         signature=signature,
     ):

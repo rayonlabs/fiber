@@ -7,10 +7,10 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from fastapi import Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 
+from fiber.encrypted.miner.core.models.config import Config
+from fiber.encrypted.miner.core.models.encryption import SymmetricKeyExchange
+from fiber.encrypted.miner.dependencies import get_config
 from fiber.logging_utils import get_logger
-from fiber.miner.core.models.config import Config
-from fiber.miner.core.models.encryption import SymmetricKeyExchange
-from fiber.miner.dependencies import get_config
 
 logger = get_logger(__name__)
 

@@ -8,10 +8,10 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from substrateinterface import Keypair
 
 from fiber import constants as cst
+from fiber.encrypted.miner.core.models import encryption
+from fiber.encrypted.validator.client import get_headers_with_nonce
+from fiber.encrypted.validator.security.encryption import public_key_encrypt
 from fiber.logging_utils import get_logger
-from fiber.miner.core.models import encryption
-from fiber.validator.client import get_headers_with_nonce
-from fiber.validator.security.encryption import public_key_encrypt
 
 logger = get_logger(__name__)
 

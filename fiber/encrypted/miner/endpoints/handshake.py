@@ -4,11 +4,11 @@ from cryptography.fernet import Fernet
 from fastapi import APIRouter, Depends, Header
 
 from fiber import constants as cst
+from fiber.encrypted.miner.core.configuration import Config
+from fiber.encrypted.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
+from fiber.encrypted.miner.dependencies import blacklist_low_stake, get_config, verify_request
+from fiber.encrypted.miner.security.encryption import get_symmetric_key_b64_from_payload
 from fiber.logging_utils import get_logger
-from fiber.miner.core.configuration import Config
-from fiber.miner.core.models.encryption import PublicKeyResponse, SymmetricKeyExchange
-from fiber.miner.dependencies import blacklist_low_stake, get_config, verify_request
-from fiber.miner.security.encryption import get_symmetric_key_b64_from_payload
 
 logger = get_logger(__name__)
 

@@ -33,7 +33,7 @@ async def _logging_middleware(request: Request, call_next) -> Response:
 
 
 async def _custom_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    logger.error(f"An error occurred: {exc}. Endpoint was {request.method}; {request.url}", exc_info=True)
+    logger.error(f"An error occurred: {exc}", exc_info=True)
     return JSONResponse(content={"detail": "Internal Server Error"}, status_code=500)
 
 

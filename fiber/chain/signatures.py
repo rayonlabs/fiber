@@ -1,3 +1,4 @@
+import hashlib
 
 from substrateinterface import Keypair
 
@@ -10,6 +11,10 @@ def sign_message(keypair: Keypair, message: str | None) -> str | None:
     if message is None:
         return None
     return f"0x{keypair.sign(message).hex()}"
+
+
+def get_hash(body: bytes) -> str:
+    return hashlib.sha256(body).hexdigest()
 
 
 def verify_signature(message: str | None, signature: str, signer_ss58_address: str) -> bool:

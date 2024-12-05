@@ -4,13 +4,13 @@ import httpx
 from substrateinterface import Keypair
 
 from fiber.chain.metagraph import Metagraph
-from fiber.encrypted.miner.security.nonce_management import NonceManager
+from fiber.encrypted.miner.security import key_management
 
 
 @dataclass
 class Config:
+    encryption_keys_handler: key_management.EncryptionKeysHandler
     keypair: Keypair
     metagraph: Metagraph
     min_stake_threshold: float
     httpx_client: httpx.AsyncClient
-    nonce_manager: NonceManager

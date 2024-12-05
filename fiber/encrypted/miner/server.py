@@ -3,8 +3,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from fiber.encrypted.miner.core import configuration
+from fiber.encrypted.miner.endpoints.handshake import factory_router as handshake_factory_router
 from fiber.logging_utils import get_logger
-from fiber.miner.core import configuration
 
 logger = get_logger(__name__)
 
@@ -23,10 +24,14 @@ def factory_app(debug: bool = False) -> FastAPI:
 
         logger.info("Shutting down...")
 
+        config.encryption_keys_handler.close()
         metagraph.shutdown()
         if metagraph.substrate is not None and sync_thread is not None:
             sync_thread.join()
 
     app = FastAPI(lifespan=lifespan, debug=debug)
+
+    handshake_router = handshake_factory_router()
+    app.include_router(handshake_router)
 
     return app
