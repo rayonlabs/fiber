@@ -1,4 +1,5 @@
 import json
+import ssl
 from pathlib import Path
 from typing import Any
 
@@ -6,10 +7,11 @@ from scalecodec import ScaleBytes, ScaleType
 from scalecodec.base import RuntimeConfiguration
 from scalecodec.type_registry import load_type_registry_preset
 from substrateinterface import Keypair
+from websockets.client import ClientConnection
 
 from fiber import SubstrateInterface
 from fiber.chain import chain_utils as utils
-from fiber.chain import type_registries
+from fiber.chain import interface, type_registries
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -107,6 +109,23 @@ def sign_message(keypair: Keypair, message: str | None) -> str | None:
     return f"0x{keypair.sign(message).hex()}"
 
 
+def websocket_to_url(websocket: ClientConnection) -> str:
+    is_ssl = isinstance(websocket.socket, ssl.SSLSocket)  # noqa
+
+    if is_ssl:
+        prefix = "wss://"
+    else:
+        prefix = "ws://"
+
+    host = websocket.request.headers["host"]
+    port = str(websocket.socket.getpeername()[1])
+
+    if port in host:
+        return prefix + host
+
+
+    return prefix + host + ":" + str(port)
+
 
 def query_substrate(
     substrate: SubstrateInterface, module: str, method: str, params: list[Any], return_value: bool = True
@@ -120,7 +139,7 @@ def query_substrate(
     except Exception as e:
         logger.error(f"Query failed with error: {e}. Reconnecting and retrying.")
 
-        substrate = SubstrateInterface(url=substrate.url)
+        substrate = interface.get_substrate_from_websocket(substrate.websocket)
 
         query_result = substrate.query(module, method, params)
 

@@ -8,7 +8,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from fiber import constants as fcst
 from fiber.chain.chain_utils import format_error_message
-from fiber.chain.interface import get_substrate
+from fiber.chain.interface import get_substrate_from_websocket
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -34,7 +34,7 @@ def _query_subtensor(
         )
     except Exception:
         # Should prevent SSL errors
-        substrate = get_substrate(subtensor_address=substrate.url)
+        substrate = get_substrate_from_websocket(substrate.websocket)
         raise
 
 
@@ -173,7 +173,7 @@ def set_node_weights(
     node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
 
     # Fetch a new substrate object to reset the connection
-    substrate = get_substrate(subtensor_address=substrate.url)
+    substrate = get_substrate_from_websocket(substrate.websocket)
 
     weights_can_be_set = False
     for attempt in range(1, max_attempts + 1):

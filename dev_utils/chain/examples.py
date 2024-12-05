@@ -13,30 +13,45 @@ async def metagraph_example():
     # First option: use the Metagraph class
     mg = metagraph.Metagraph(substrate=substrate, netuid=176)
     mg.sync_nodes()
-    logger.info(f"Found nodes: {mg.nodes}")
+    logger.info(f"Found {len(mg.nodes)} nodes on the metagraph using the Metagraph class!")
 
     # OR - use the fetch_nodes function [this is better :P]
     nodes = get_nodes_for_netuid(substrate=substrate, netuid=176)
-    logger.info(f"Found nodes: {nodes}")
+    logger.info(f"Found {len(nodes)} nodes on the metagraph using the fetch_nodes function!")
 
 
-async def set_weights_example():
+async def set_weights_example(dont_actually_run: bool = True):
+    """
+    This won't run because your hotkey is likely not on netuid 176 :)
+    """
     substrate = interface.get_substrate(subtensor_network="test")
     nodes = get_nodes_for_netuid(substrate=substrate, netuid=176)
     keypair = chain_utils.load_hotkey_keypair(wallet_name="default", hotkey_name="default")
-    validator_node_id = substrate.query("SubtensorModule", "Uids", [176, keypair.ss58_address]).value
-    version_key = substrate.query("SubtensorModule", "WeightsVersionKey", [176]).value
-    weights.set_node_weights(
-        substrate=substrate,
-        keypair=keypair,
-        node_ids=[node.node_id for node in nodes],
-        node_weights=[node.incentive for node in nodes],
-        netuid=176,
-        validator_node_id=validator_node_id,
-        version_key=version_key,
-        wait_for_inclusion=True,
-        wait_for_finalization=True,
+
+    logger.warning("Querying validator node id...")
+    substrate, validator_node_id = chain_utils.query_substrate(
+        substrate, "SubtensorModule", "Uids", [176, keypair.ss58_address], return_value=True
     )
+
+    substrate, version_key = chain_utils.query_substrate(
+        substrate, "SubtensorModule", "WeightsVersionKey", [176], return_value=True
+    )
+
+    if dont_actually_run:
+        logger.info("Probably would've set weights correctly!")
+    else:
+        weights.set_node_weights(
+            substrate=substrate,
+            keypair=keypair,
+            node_ids=[node.node_id for node in nodes],
+            node_weights=[node.incentive for node in nodes],
+            netuid=176,
+            validator_node_id=validator_node_id,
+            version_key=version_key,
+            wait_for_inclusion=True,
+            wait_for_finalization=True,
+        )
+
 
 # NOTE this is also a script in /scropts/post_ip_to_chain and you can use it on the cli with fiber-post-ip
 async def post_ip_to_chain_example():
@@ -67,6 +82,7 @@ async def main():
     await metagraph_example()
     await set_weights_example()
     await post_ip_to_chain_example()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

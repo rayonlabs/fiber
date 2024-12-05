@@ -9,7 +9,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from fiber import constants as fcst
 from fiber.chain import chain_utils as chain_utils
 from fiber.chain import models, type_registries
-from fiber.chain.interface import get_substrate
+from fiber.chain.interface import get_substrate_from_websocket
 from fiber.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -164,5 +164,5 @@ def _get_nodes_for_uid(substrate: SubstrateInterface, netuid: int, block: int | 
 def get_nodes_for_netuid(substrate: SubstrateInterface, netuid: int, block: int | None = None) -> list[models.Node]:
     # Make a new substrate connection for this. Could I add this to the _get_nodes_for_uid function
     # and do the try: except: reraise pattern?
-    substrate = get_substrate(subtensor_address=substrate.url)
+    substrate = get_substrate_from_websocket(substrate.websocket)
     return _get_nodes_for_uid(substrate, netuid, block)
