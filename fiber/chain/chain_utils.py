@@ -123,7 +123,6 @@ def websocket_to_url(websocket: ClientConnection) -> str:
     if port in host:
         return prefix + host
 
-
     return prefix + host + ":" + str(port)
 
 
