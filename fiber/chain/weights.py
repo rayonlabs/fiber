@@ -284,7 +284,6 @@ def set_node_weights(
     version_key: int = 0,
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
-    commit_reveal: bool | None = None,
 ) -> bool:
     node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
 
@@ -295,28 +294,32 @@ def set_node_weights(
         logger.error("It is too soon to set weights!")
         return False
 
-    if commit_reveal is None:
-        commit_reveal = _commit_reveal_hyperparameter_is_set(substrate, netuid)
+
+    # NOTE: Sadly this can't be an argument, the hyperparam must be set on chain
+    # For it to function properly
+    commit_reveal = _commit_reveal_hyperparameter_is_set(substrate, netuid)
 
 
     if commit_reveal is False:
         return _set_weights_without_commit_reveal(
             substrate,
             keypair,
-            node_ids,
-            node_weights,
+            node_ids_formatted,
+            node_weights_formatted,
             netuid,
-            validator_node_id,
             version_key,
+            wait_for_inclusion,
+            wait_for_finalization,
         )
 
     if commit_reveal is True:
         return _set_weights_with_commit_reveal(
             substrate,
             keypair,
-            node_ids,
-            node_weights,
+            node_ids_formatted,
+            node_weights_formatted,
             netuid,
-            validator_node_id,
             version_key,
+            wait_for_inclusion,
+            wait_for_finalization,
         )
