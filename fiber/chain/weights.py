@@ -272,9 +272,9 @@ def set_node_weights(
     netuid: int,
     validator_node_id: int,
     version_key: int = 0,
-    max_attempts: int = 3,  # DEPRECATED
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
+    max_attempts: int = 3,  # DEPRECATED
 ) -> bool:
     node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
 
