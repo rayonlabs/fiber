@@ -62,7 +62,13 @@ def can_set_weights(substrate: SubstrateInterface, netuid: int, validator_node_i
     min_interval = min_interval_to_set_weights(substrate, netuid)
     if min_interval is None:
         return True
-    return blocks_since_update is not None and blocks_since_update >= min_interval
+
+    can_set_weights = blocks_since_update is not None and blocks_since_update >= min_interval
+    if not can_set_weights:
+        logger.error(
+            f"It is too soon to set weights! {blocks_since_update} blocks since last update, {min_interval} blocks required."
+        )
+    return can_set_weights
 
 
 def _send_weights_to_chain(
@@ -112,6 +118,7 @@ def _send_weights_to_chain(
 
     return _send_weights()
 
+
 def _send_commit_reveal_weights_to_chain(
     substrate: SubstrateInterface,
     keypair: Keypair,
@@ -121,7 +128,6 @@ def _send_commit_reveal_weights_to_chain(
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
 ) -> tuple[bool, str | None]:
-
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1.5, min=2, max=5),
@@ -160,6 +166,7 @@ def _send_commit_reveal_weights_to_chain(
 
     return _send_commit_reveal_weights()
 
+
 def _set_weights_without_commit_reveal(
     substrate: SubstrateInterface,
     keypair: Keypair,
@@ -170,6 +177,7 @@ def _set_weights_without_commit_reveal(
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
 ) -> bool:
+    logger.info(f"Setting weights for subnet {netuid} with version key {version_key} - no commit reveal...")
     success, error_message = _send_weights_to_chain(
         substrate,
         keypair,
@@ -198,6 +206,7 @@ def _set_weights_without_commit_reveal(
     substrate.close()
     return success
 
+
 def _set_weights_with_commit_reveal(
     substrate: SubstrateInterface,
     keypair: Keypair,
@@ -208,16 +217,12 @@ def _set_weights_with_commit_reveal(
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
 ) -> bool:
-
     substrate, current_block = query_substrate(substrate, "System", "Number", [], return_value=True)
 
-    substrate, tempo = query_substrate(
-        substrate, "SubtensorModule", "Tempo", [netuid], return_value=True
-    )
+    substrate, tempo = query_substrate(substrate, "SubtensorModule", "Tempo", [netuid], return_value=True)
     substrate, subnet_reveal_period_epochs = query_substrate(
         substrate, "SubtensorModule", "RevealPeriodEpochs", [netuid], return_value=True
     )
-
 
     # Encrypt `commit_hash` with t-lock and `get reveal_round`
     commit_for_reveal, reveal_round = get_encrypted_commit(
@@ -230,10 +235,7 @@ def _set_weights_with_commit_reveal(
         subnet_reveal_period_epochs=subnet_reveal_period_epochs,
     )
 
-    logger.info(
-        f"Committing weights hash {commit_for_reveal.hex()} for subnet {netuid} with "
-        f"reveal round {reveal_round}..."
-    )
+    logger.info(f"Committing weights hash {commit_for_reveal.hex()} for subnet {netuid} with " f"reveal round {reveal_round}...")
     success, error_message = _send_commit_reveal_weights_to_chain(
         substrate,
         keypair,
@@ -262,18 +264,6 @@ def _set_weights_with_commit_reveal(
     return success
 
 
-
-
-def _commit_reveal_hyperparameter_is_set(substrate: SubstrateInterface, netuid: int) -> bool:
-    commit_reveal_enabled = query_substrate(
-        substrate,
-        "SubtensorModule",
-        "CommitRevealWeightsEnabled",
-        [netuid],
-        return_value=True,
-    )
-    return commit_reveal_enabled
-
 def set_node_weights(
     substrate: SubstrateInterface,
     keypair: Keypair,
@@ -291,16 +281,21 @@ def set_node_weights(
     substrate = get_substrate(subtensor_address=substrate.url)
 
     if not can_set_weights(substrate, netuid, validator_node_id):
-        logger.error("It is too soon to set weights!")
         return False
 
-
-    # NOTE: Sadly this can't be an argument, the hyperparam must be set on chain
+    # NOTE: Sadly this can't be an argument of the function, the hyperparam must be set on chain
     # For it to function properly
-    commit_reveal = _commit_reveal_hyperparameter_is_set(substrate, netuid)
+    substrate, commit_reveal_enabled = query_substrate(
+        substrate,
+        "SubtensorModule",
+        "CommitRevealWeightsEnabled",
+        [netuid],
+        return_value=True,
+    )
 
+    logger.info(f"Commit reveal enabled hyperparameter is set to {commit_reveal_enabled}")
 
-    if commit_reveal is False:
+    if commit_reveal_enabled is False:
         return _set_weights_without_commit_reveal(
             substrate,
             keypair,
@@ -312,7 +307,7 @@ def set_node_weights(
             wait_for_finalization,
         )
 
-    if commit_reveal is True:
+    elif commit_reveal_enabled is True:
         return _set_weights_with_commit_reveal(
             substrate,
             keypair,
@@ -323,3 +318,6 @@ def set_node_weights(
             wait_for_inclusion,
             wait_for_finalization,
         )
+
+    else:
+        raise ValueError(f"Commit reveal enabled hyperparameter is set to {commit_reveal_enabled}, which is not a valid value")

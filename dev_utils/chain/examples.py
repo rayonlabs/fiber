@@ -20,7 +20,7 @@ async def metagraph_example():
     logger.info(f"Found nodes: {nodes}")
 
 
-async def set_weights_example(netuid: int = 176):
+async def set_weights_example(netuid: int = 267):
     substrate = interface.get_substrate(subtensor_network="test")
     nodes = get_nodes_for_netuid(substrate=substrate, netuid=netuid)
     keypair = chain_utils.load_hotkey_keypair(wallet_name="default", hotkey_name="default")
@@ -30,12 +30,14 @@ async def set_weights_example(netuid: int = 176):
         substrate=substrate,
         keypair=keypair,
         node_ids=[node.node_id for node in nodes],
-        node_weights=[node.incentive for node in nodes],
+        node_weights=[node.incentive + 1 for node in nodes],
         netuid=netuid,
         validator_node_id=validator_node_id,
         version_key=version_key,
         wait_for_inclusion=True,
-        wait_for_finalization=True    )
+        wait_for_finalization=True,
+    )
+
 
 # NOTE this is also a script in /scropts/post_ip_to_chain and you can use it on the cli with fiber-post-ip
 async def post_ip_to_chain_example():
@@ -66,6 +68,7 @@ async def main():
     # await metagraph_example()
     await set_weights_example()
     # await post_ip_to_chain_example()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
