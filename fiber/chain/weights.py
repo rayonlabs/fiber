@@ -272,6 +272,7 @@ def set_node_weights(
     netuid: int,
     validator_node_id: int,
     version_key: int = 0,
+    max_attempts: int = 3,  # DEPRECATED
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
 ) -> bool:
