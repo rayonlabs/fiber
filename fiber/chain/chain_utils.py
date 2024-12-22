@@ -107,22 +107,28 @@ def sign_message(keypair: Keypair, message: str | None) -> str | None:
     return f"0x{keypair.sign(message).hex()}"
 
 
-
 def query_substrate(
-    substrate: SubstrateInterface, module: str, method: str, params: list[Any], return_value: bool = True
+    substrate: SubstrateInterface,
+    module: str,
+    method: str,
+    params: list[Any],
+    return_value: bool = True,
+    block: int | None = None,
 ) -> tuple[SubstrateInterface, Any]:
     try:
-        query_result = substrate.query(module, method, params)
+        block_hash = substrate.get_block_hash(block) if block is not None else None
+        query_result = substrate.query(module, method, params, block_hash=block_hash)
 
         return_val = query_result.value if return_value else query_result
 
         return substrate, return_val
     except Exception as e:
-        logger.error(f"Query failed with error: {e}. Reconnecting and retrying.")
+        logger.debug(f"Substrate query failed with error: {e}. Reconnecting and retrying.")
 
         substrate = SubstrateInterface(url=substrate.url)
 
-        query_result = substrate.query(module, method, params)
+        block_hash = substrate.get_block_hash(block) if block is not None else None
+        query_result = substrate.query(module, method, params, block_hash=block_hash)
 
         return_val = query_result.value if return_value else query_result
 

@@ -53,5 +53,5 @@ def get_logger(name: str):
     console_handler.setFormatter(colored_formatter)
     logger.addHandler(console_handler)
 
-    logger.info(f"Logging mode is {logging.getLevelName(logger.getEffectiveLevel())}")
+    logger.debug(f"Logging mode is {logging.getLevelName(logger.getEffectiveLevel())}")
     return logger
