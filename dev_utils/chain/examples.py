@@ -36,6 +36,7 @@ async def set_weights_example(netuid: int = 267):
         version_key=version_key,
         wait_for_inclusion=True,
         wait_for_finalization=True,
+        max_attempts=2,
     )
 
 
@@ -65,7 +66,7 @@ async def post_ip_to_chain_example():
 
 
 async def main():
-    await metagraph_example()
+    # await metagraph_example()
     await set_weights_example()
     await post_ip_to_chain_example()
 

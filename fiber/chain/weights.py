@@ -1,3 +1,4 @@
+import warnings
 from functools import wraps
 from typing import Any, Callable
 
@@ -274,8 +275,12 @@ def set_node_weights(
     version_key: int = 0,
     wait_for_inclusion: bool = False,
     wait_for_finalization: bool = False,
-    max_attempts: int = 3,  # DEPRECATED
+    max_attempts: int | None = None,  # NOTE: DEPRECATED
 ) -> bool:
+    if max_attempts is not None:
+        warnings.warn(
+            "Parameter 'max_attempts' is deprecated and will be removed in version 2.2.0", DeprecationWarning, stacklevel=2
+        )
     node_ids_formatted, node_weights_formatted = _normalize_and_quantize_weights(node_ids, node_weights)
 
     # Fetch a new substrate object to reset the connection
