@@ -65,9 +65,9 @@ async def post_ip_to_chain_example():
 
 
 async def main():
-    # await metagraph_example()
+    await metagraph_example()
     await set_weights_example()
-    # await post_ip_to_chain_example()
+    await post_ip_to_chain_example()
 
 
 if __name__ == "__main__":
