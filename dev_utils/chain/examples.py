@@ -35,9 +35,7 @@ async def set_weights_example(netuid: int = 267):
         validator_node_id=validator_node_id,
         version_key=version_key,
         wait_for_inclusion=True,
-        wait_for_finalization=True,
-        max_attempts=2,
-    )
+        wait_for_finalization=True    )
 
 
 # NOTE this is also a script in /scropts/post_ip_to_chain and you can use it on the cli with fiber-post-ip
@@ -66,7 +64,7 @@ async def post_ip_to_chain_example():
 
 
 async def main():
-    # await metagraph_example()
+    await metagraph_example()
     await set_weights_example()
     await post_ip_to_chain_example()
 
