@@ -43,33 +43,33 @@ def _normalize_and_quantize_weights(node_ids: list[int], node_weights: list[floa
     return node_ids_formatted, node_weights_formatted
 
 
-def blocks_since_last_update(substrate: SubstrateInterface, netuid: int, node_id: int) -> int:
+def blocks_since_last_update(substrate: SubstrateInterface, netuid: int, node_id: int) -> tuple[SubstrateInterface, int]:
     substrate, current_block = query_substrate(substrate, "System", "Number", [], return_value=True)
     substrate, last_updated_value = query_substrate(substrate, "SubtensorModule", "LastUpdate", [netuid], return_value=False)
     updated: int = current_block - last_updated_value[node_id].value
-    return updated
+    return substrate, updated
 
 
-def min_interval_to_set_weights(substrate: SubstrateInterface, netuid: int) -> int:
+def min_interval_to_set_weights(substrate: SubstrateInterface, netuid: int) -> tuple[SubstrateInterface, int]:
     substrate, weights_set_rate_limit = query_substrate(
         substrate, "SubtensorModule", "WeightsSetRateLimit", [netuid], return_value=True
     )
     assert isinstance(weights_set_rate_limit, int), "WeightsSetRateLimit should be an int"
-    return weights_set_rate_limit
+    return substrate, weights_set_rate_limit
 
 
-def can_set_weights(substrate: SubstrateInterface, netuid: int, validator_node_id: int) -> bool:
-    blocks_since_update = blocks_since_last_update(substrate, netuid, validator_node_id)
-    min_interval = min_interval_to_set_weights(substrate, netuid)
+def can_set_weights(substrate: SubstrateInterface, netuid: int, validator_node_id: int) -> tuple[SubstrateInterface, bool]:
+    substrate, blocks_since_update = blocks_since_last_update(substrate, netuid, validator_node_id)
+    substrate, min_interval = min_interval_to_set_weights(substrate, netuid)
     if min_interval is None:
-        return True
+        return substrate, True
 
     can_set_weights = blocks_since_update is not None and blocks_since_update >= min_interval
     if not can_set_weights:
         logger.error(
             f"It is too soon to set weights! {blocks_since_update} blocks since last update, {min_interval} blocks required."
         )
-    return can_set_weights
+    return substrate, can_set_weights
 
 
 def _send_weights_to_chain(
